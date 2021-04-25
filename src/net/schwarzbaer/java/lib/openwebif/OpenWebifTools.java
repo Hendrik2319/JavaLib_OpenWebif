@@ -19,6 +19,12 @@ import net.schwarzbaer.java.lib.jsonparser.JSON_Parser.ParseException;
 
 public class OpenWebifTools {
 
+	public static String getStationStreamURL(String baseURL, StationID stationID) {
+		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
+		return String.format("%s:8001/%s:", baseURL, stationID.toIDStr());
+	}
+	
 	static class NV extends JSON_Data.NamedValueExtra.Dummy{}
 	static class V extends JSON_Data.ValueExtra.Dummy{}
 	
