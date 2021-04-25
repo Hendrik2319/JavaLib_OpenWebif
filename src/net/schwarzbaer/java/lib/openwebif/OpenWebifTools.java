@@ -1,12 +1,17 @@
 package net.schwarzbaer.java.lib.openwebif;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -14,6 +19,8 @@ import java.util.Arrays;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.JSON_Array;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.JSON_Object;
+import net.schwarzbaer.java.lib.jsonparser.JSON_Data.TraverseException;
+import net.schwarzbaer.java.lib.jsonparser.JSON_Data.Value;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Parser;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Parser.ParseException;
 
@@ -23,6 +30,15 @@ public class OpenWebifTools {
 		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
 		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s:8001/%s:", baseURL, stationID.toIDStr());
+	}
+
+	public static String getMovieURL(String baseURL, MovieList.Movie movie) {
+		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		String movieURL = null;
+		try { movieURL = URLEncoder.encode(movie.filename, "UTF-8");
+		} catch (UnsupportedEncodingException e) { System.err.printf("Exception while creating movie URL: [UnsupportedEncodingException] %s%n", e.getMessage()); }
+		
+		return String.format("%s/file?file=%s", baseURL, movieURL);
 	}
 	
 	static class NV extends JSON_Data.NamedValueExtra.Dummy{}
@@ -72,6 +88,80 @@ public class OpenWebifTools {
 					}
 			}
 		}
+	}
+	
+	public interface MovieListReadInterface {
+		void setIndeterminateProgressTask(String taskTitle);
+	}
+
+	public static MovieList readMovieList(String baseURL, String dir, MovieListReadInterface movieListReadInterface) {
+		movieListReadInterface.setIndeterminateProgressTask("Build URL");
+		String urlStr = String.format("%s/api/movielist", baseURL);
+		String dir_ = dir;
+		if (dir_!=null) {
+			try { dir_ = URLEncoder.encode(dir_, "UTF-8");
+			} catch (UnsupportedEncodingException e) { System.err.printf("Exception while converting directory name: [UnsupportedEncodingException] %s%n", e.getMessage()); }
+			urlStr = String.format("%s?dirname=%s", urlStr, dir_);
+		}
+		System.out.printf("get MovieList: \"%s\"%n", urlStr);
+		
+		movieListReadInterface.setIndeterminateProgressTask("Read Content from URL");
+		String content = getContent(urlStr);
+		
+		movieListReadInterface.setIndeterminateProgressTask("Parse Content");
+		Value<NV, V> result = new JSON_Parser<NV,V>(content,null).parse();
+		
+		movieListReadInterface.setIndeterminateProgressTask("Create MovieList");
+		try {
+			return new MovieList(result);
+		} catch (TraverseException e) {
+			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
+			return null;
+		}
+	}
+
+	static String decodeUnicode(String str) {
+		if (str==null) return null;
+		int pos;
+		int startPos = 0;
+		while ( (pos=str.indexOf("\\u",startPos))>=0 ) {
+			if (str.length()<pos+6) break;
+			String prefix = str.substring(0, pos);
+			String suffix = str.substring(pos+6);
+			String codeStr = str.substring(pos+2,pos+6);
+			int code;
+			try { code = Integer.parseUnsignedInt(codeStr,16); }
+			catch (NumberFormatException e) { startPos = pos+2; continue; }
+			str = prefix + ((char)code) + suffix;
+		}
+		return str;
+	}
+
+	static String getContent(String urlStr) {
+		URL url;
+		try { url = new URL(urlStr); }
+		catch (MalformedURLException e) { System.err.printf("MalformedURL: %s%n", e.getMessage()); return null; }
+		
+		URLConnection conn;
+		try { conn = url.openConnection(); }
+		catch (IOException e) { System.err.printf("url.openConnection -> IOException: %s%n", e.getMessage()); return null; }
+		
+		conn.setDoInput(true);
+		try { conn.connect(); }
+		catch (IOException e) { System.err.printf("conn.connect -> IOException: %s%n", e.getMessage()); return null; }
+		
+		ByteArrayOutputStream storage = new ByteArrayOutputStream();
+		try (BufferedInputStream in = new BufferedInputStream( conn.getInputStream() )) {
+			byte[] buffer = new byte[100000];
+			int n;
+			while ( (n=in.read(buffer))>=0 )
+				if (n>0) storage.write(buffer, 0, n);
+			
+		} catch (IOException e) {
+			System.err.printf("IOException: %s%n", e.getMessage());
+		}
+		
+		return new String(storage.toByteArray());
 	}
 	
 	private static String getContentFromURL(String urlStr, boolean verbose, boolean showContent, boolean verboseOnError) {
