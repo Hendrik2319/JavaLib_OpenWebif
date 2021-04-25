@@ -120,7 +120,7 @@ public class OpenWebifTools {
 		}
 	}
 
-	static String decodeUnicode(String str) {
+	public static String decodeUnicode(String str) {
 		if (str==null) return null;
 		int pos;
 		int startPos = 0;

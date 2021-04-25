@@ -32,7 +32,7 @@ public class Service {
 					return null;
 				}
 			} else if (i==11) {
-				service.label = strs[i];
+				service.label = OpenWebifTools.decodeUnicode(strs[i]);
 			}
 		}
 		return service;
