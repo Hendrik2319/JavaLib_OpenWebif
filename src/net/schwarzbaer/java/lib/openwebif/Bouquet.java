@@ -23,9 +23,9 @@ public class Bouquet {
 
 	static Bouquet parse(JSON_Object<NV,V> object, BouquetReadInterface bouquetReadInterface) {
 		if (object==null) return null;
-		String servicereference       = JSON_Data.getStringValue(object.getValue("servicereference"));
-		String servicename            = JSON_Data.getStringValue(object.getValue("servicename"));
-		JSON_Array<NV,V> subservices  = JSON_Data.getArrayValue (object.getValue("subservices"));
+		String servicereference       =                    JSON_Data.getStringValue(object.getValue("servicereference"));
+		String servicename = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue(object.getValue("servicename"     )) );
+		JSON_Array<NV,V> subservices  =                    JSON_Data.getArrayValue (object.getValue("subservices"     ));
 		if (subservices==null) return null;
 		
 		Bouquet bouquet = new Bouquet(servicename,servicereference);
@@ -67,10 +67,10 @@ public class Bouquet {
 
 		public static SubService parse(JSON_Object<NV,V> object, BouquetReadInterface bouquetReadInterface) {
 			if (object==null) return null;
-			String servicereference = JSON_Data.getStringValue (object.getValue("servicereference"));
-			Long   program          = JSON_Data.getIntegerValue(object.getValue("program"));
-			String servicename      = JSON_Data.getStringValue (object.getValue("servicename"));
-			Long   pos              = JSON_Data.getIntegerValue(object.getValue("pos"));
+			String servicereference =                          JSON_Data.getStringValue (object.getValue("servicereference"));
+			Long   program          =                          JSON_Data.getIntegerValue(object.getValue("program"         ));
+			String servicename = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object.getValue("servicename"     )) );
+			Long   pos              =                          JSON_Data.getIntegerValue(object.getValue("pos"             ));
 			Service service = null;
 			if (servicereference!=null) service = Service.parseServiceStr(servicereference);
 			if (service==null) return null;
