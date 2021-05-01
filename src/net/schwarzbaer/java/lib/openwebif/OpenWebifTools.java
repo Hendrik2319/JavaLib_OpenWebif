@@ -35,13 +35,25 @@ public class OpenWebifTools {
 	public static BufferedImage getPicon(String baseURL, StationID stationID) {
 		if (baseURL==null || stationID==null) return null;
 		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		
 		// http://192.168.2.75/picon/1_0_19_2B66_3F3_1_C00000_0_0_0.png
 		String urlStr = String.format("%s/picon/%s", baseURL, stationID.toPiconImageFileName());
 		URL url;
-		try { url = new URL(urlStr); }
-		catch (MalformedURLException ex) { System.err.printf("MalformedURLException: %s%n", ex.getMessage()); return null; }
-		try { return ImageIO.read(url); }
-		catch (IOException ex) { System.err.printf("IOException while ImageIO.read(\"%s\"): %s%n", urlStr, ex.getMessage()); return null; }
+		try {
+			url = new URL(urlStr);
+		} catch (MalformedURLException ex) {
+			System.err.printf("MalformedURLException in URL(\"%s\"): %s%n", urlStr, ex.getMessage());
+			return null;
+		}
+		
+		try {
+			return ImageIO.read(url);
+		} catch (IOException ex) {
+			String msg = ex.getMessage();
+			if (!msg.equals("Can't get input stream from URL!"))
+				System.err.printf("IOException while ImageIO.read(\"%s\"): %s%n", urlStr, msg);
+			return null;
+		}
 	}
 	
 	public static String getStationStreamURL(String baseURL, StationID stationID) {
