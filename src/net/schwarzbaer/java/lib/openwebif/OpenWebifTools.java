@@ -1,5 +1,6 @@
 package net.schwarzbaer.java.lib.openwebif;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,6 +16,11 @@ import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Vector;
+import java.util.function.Consumer;
+
+import javax.imageio.ImageIO;
 
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.JSON_Array;
@@ -26,6 +32,18 @@ import net.schwarzbaer.java.lib.jsonparser.JSON_Parser.ParseException;
 
 public class OpenWebifTools {
 
+	public static BufferedImage getPicon(String baseURL, StationID stationID) {
+		if (baseURL==null || stationID==null) return null;
+		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		// http://192.168.2.75/picon/1_0_19_2B66_3F3_1_C00000_0_0_0.png
+		String urlStr = String.format("%s/picon/%s", baseURL, stationID.toPiconImageFileName());
+		URL url;
+		try { url = new URL(urlStr); }
+		catch (MalformedURLException ex) { System.err.printf("MalformedURLException: %s%n", ex.getMessage()); return null; }
+		try { return ImageIO.read(url); }
+		catch (IOException ex) { System.err.printf("IOException while ImageIO.read(\"%s\"): %s%n", urlStr, ex.getMessage()); return null; }
+	}
+	
 	public static String getStationStreamURL(String baseURL, StationID stationID) {
 		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
 		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
@@ -49,7 +67,29 @@ public class OpenWebifTools {
 		void addBouquet(Bouquet Bouquet);
 		void addStationName(StationID stationID, String name);
 	}
+	
+	public static class BouquetData {
+		public final Vector<Bouquet> bouquets = new Vector<>();;
+		public final HashMap<String,String> names = new HashMap<>();
+	}
 
+	public static BouquetData readBouquets(String baseURL, Consumer<String> setIndeterminateProgressTask) {
+		BouquetData bouquetData = new BouquetData();
+		readBouquets(baseURL, new BouquetReadInterface() {
+			@Override public void setIndeterminateProgressTask(String taskTitle) {
+				setIndeterminateProgressTask.accept(taskTitle);
+			}
+			@Override public void addStationName(StationID stationID, String name) {
+				if (stationID!=null && name!=null)
+					bouquetData.names.put(stationID.toIDStr(), name);
+			}
+			@Override public void addBouquet(Bouquet bouquet) {
+				bouquetData.bouquets.add(bouquet);
+			}
+		});
+		return bouquetData;
+	}
+	
 	public static void readBouquets(String baseURL, BouquetReadInterface localInterface) {
 		String jsonStr = null;
 		if (baseURL!=null) {

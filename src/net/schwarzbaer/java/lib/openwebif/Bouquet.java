@@ -52,9 +52,9 @@ public class Bouquet {
 	public static class SubService {
 
 		public final Service service;
-		final String  servicereference;
-		final Long    program;
-		final String  name;
+		public final String  servicereference;
+		public final Long    program;
+		public final String  name;
 		public final Long    pos;
 
 		public SubService(Service service, String servicereference, Long program, String name, Long pos) {
@@ -63,6 +63,10 @@ public class Bouquet {
 			this.program = program;
 			this.name = name;
 			this.pos = pos;
+		}
+		
+		public boolean isMarker() {
+			return service.isMarker();
 		}
 
 		public static SubService parse(JSON_Object<NV,V> object, BouquetReadInterface bouquetReadInterface) {
