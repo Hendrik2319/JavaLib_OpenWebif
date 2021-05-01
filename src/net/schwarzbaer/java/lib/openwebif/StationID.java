@@ -28,6 +28,9 @@ public class StationID implements Comparable<StationID> {
 		return 0;
 	}
 
+	public String toIDStr(boolean addColon) {
+		return toIDStr()+(addColon ? ":" : "");
+	}
 	public String toIDStr() {
 		return String.join(":", Arrays.asList(numbers).stream().map(i->String.format("%X",i)).toArray(i->new String[i]));
 	}

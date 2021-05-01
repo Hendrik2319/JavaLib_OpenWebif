@@ -5,6 +5,7 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
@@ -56,10 +57,49 @@ public class OpenWebifTools {
 		}
 	}
 	
+	public static ResponseMessage zapToStation(String baseURL, StationID stationID) {
+		String url = getStationZapURL(baseURL, stationID);
+		String response = getContent(url);
+		JSON_Parser<NV,V> parser = new JSON_Parser<>(response,null);
+		try {
+			JSON_Data.Value<NV,V> result = parser.parse_withParseException();
+			if (result!=null) return new ResponseMessage(result);
+		} catch (ParseException e) {
+			System.err.printf("ParseException: %s%n", e.getMessage());
+			//e.printStackTrace();
+		} catch (TraverseException e) {
+			System.err.printf("TraverseException while parsing: %s%n", e.getMessage());
+			//e.printStackTrace();
+		}
+		return null;
+		
+	}
+	
+	public static class ResponseMessage {
+		public final String message;
+		public final boolean result;
+		ResponseMessage(JSON_Data.Value<NV,V> response) throws TraverseException {
+			JSON_Object<NV, V> object = JSON_Data.getObjectValue(response, "Response");
+			message = JSON_Data.getStringValue(object, "message", "Response");
+			result  = JSON_Data.getBoolValue  (object, "result" , "Response");
+		}
+		public void printTo(PrintStream out) {
+			out.println("Response:");
+			out.printf ("   Result: %s%n", result);
+			out.printf ("   Message: \"%s\"%n", message);
+		}
+	}
+	
+	public static String getStationZapURL(String baseURL, StationID stationID) {
+		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		// http://et7x00/api/zap?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
+		return String.format("%s/api/zap?sRef=%s", baseURL, stationID.toIDStr(true));
+	}
+	
 	public static String getStationStreamURL(String baseURL, StationID stationID) {
 		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
 		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
-		return String.format("%s:8001/%s:", baseURL, stationID.toIDStr());
+		return String.format("%s:8001/%s", baseURL, stationID.toIDStr(true));
 	}
 
 	public static String getMovieURL(String baseURL, MovieList.Movie movie) {
