@@ -121,7 +121,7 @@ public class OpenWebifTools {
 		return String.format("%s/api/epgservicenow?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
 
-	public static CurrentEPGevent getCurrentEPGevent(String baseURL, StationID stationID) {
+	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID) {
 		String url = getCurrentEPGeventURL(baseURL, stationID);
 		String content = getContent(url);
 		Value<NV, V> result;
@@ -137,7 +137,9 @@ public class OpenWebifTools {
 		
 		//return new CurrentEPGevent(result);
 		try {
-			return new CurrentEPGevent(result);
+			CurrentEPGeventResult currentEPGevent = new CurrentEPGeventResult(result);
+			if (!currentEPGevent.result) return null;
+			return currentEPGevent.events;
 		} catch (TraverseException e) {
 			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
 			System.err.printf("   getCurrentEPGevent(baseURL, stationID)%n");
@@ -147,13 +149,13 @@ public class OpenWebifTools {
 		}
 	}
 	
-	public static class CurrentEPGevent {
+	public static class CurrentEPGeventResult {
 
 		public final boolean result;
 		public final Vector<EPGevent> events;
 
-		public CurrentEPGevent(Value<NV, V> value) throws TraverseException { this(value,null); }
-		public CurrentEPGevent(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
+		public CurrentEPGeventResult(Value<NV, V> value) throws TraverseException { this(value,null); }
+		public CurrentEPGeventResult(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "CurrentEPGevent";
 			
 			//OptionalValues<NV, V> optVal = new JSON_Helper.OptionalValues<NV,V>();
@@ -171,46 +173,46 @@ public class OpenWebifTools {
 			for (int i=0; i<eventsRaw.size(); i++)
 				events.add(new EPGevent(eventsRaw.get(i), debugOutputPrefixStr+"["+i+"]"));
 		}
-		
-		public static class EPGevent {
-			public final String station_name;
-			public final String title;
-			public final String shortdesc;
-			public final String longdesc;
-			public final String genre;
-			public final long genreid;
-			public final long begin_timestamp;
-			public final long now_timestamp;
-			public final long duration_sec;
-			public final long remaining;
-			public final String sref;
-			public final Long id;
+	}
 
-			public EPGevent(Value<NV, V> value) throws TraverseException { this(value,null); }
-			public EPGevent(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
-				if (debugOutputPrefixStr==null) debugOutputPrefixStr = "EPGevent";
-				
-				JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
-				
-				Object id_null;
-				station_name    = decodeUnicode( JSON_Data.getStringValue (object, "sname"          , debugOutputPrefixStr) );
-				title           = decodeUnicode( JSON_Data.getStringValue (object, "title"          , debugOutputPrefixStr) );
-				shortdesc       = decodeUnicode( JSON_Data.getStringValue (object, "shortdesc"      , debugOutputPrefixStr) );
-				longdesc        = decodeUnicode( JSON_Data.getStringValue (object, "longdesc"       , debugOutputPrefixStr) );
-				genre           = decodeUnicode( JSON_Data.getStringValue (object, "genre"          , debugOutputPrefixStr) );
-				genreid         =                JSON_Data.getIntegerValue(object, "genreid"        , debugOutputPrefixStr);
-				begin_timestamp =                JSON_Data.getIntegerValue(object, "begin_timestamp", debugOutputPrefixStr);
-				now_timestamp   =                JSON_Data.getIntegerValue(object, "now_timestamp"  , debugOutputPrefixStr);
-				duration_sec    =                JSON_Data.getIntegerValue(object, "duration_sec"   , debugOutputPrefixStr);
-				remaining       =                JSON_Data.getIntegerValue(object, "remaining"      , debugOutputPrefixStr);
-				sref            =                JSON_Data.getStringValue (object, "sref"           , debugOutputPrefixStr);
-				id              = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Integer, JSON_Data.Value::castToIntegerValue, true, debugOutputPrefixStr);
-				id_null         = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Null   , JSON_Data.Value::castToNullValue   , true, debugOutputPrefixStr);
-				if (id==null && id_null==null)
-					throw new TraverseException("%s.id isn't either an IntegerValue or a NullValue", debugOutputPrefixStr);
-			}
+	public static class EPGevent {
+		public final String station_name;
+		public final String title;
+		public final String shortdesc;
+		public final String longdesc;
+		public final String genre;
+		public final long genreid;
+		public final long begin_timestamp;
+		public final long now_timestamp;
+		public final long duration_sec;
+		public final long remaining;
+		public final String sref;
+		public final Long id;
+	
+		public EPGevent(Value<NV, V> value) throws TraverseException { this(value,null); }
+		public EPGevent(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
+			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "EPGevent";
 			
+			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
+			
+			Object id_null;
+			station_name    = decodeUnicode( JSON_Data.getStringValue (object, "sname"          , debugOutputPrefixStr) );
+			title           = decodeUnicode( JSON_Data.getStringValue (object, "title"          , debugOutputPrefixStr) );
+			shortdesc       = decodeUnicode( JSON_Data.getStringValue (object, "shortdesc"      , debugOutputPrefixStr) );
+			longdesc        = decodeUnicode( JSON_Data.getStringValue (object, "longdesc"       , debugOutputPrefixStr) );
+			genre           = decodeUnicode( JSON_Data.getStringValue (object, "genre"          , debugOutputPrefixStr) );
+			genreid         =                JSON_Data.getIntegerValue(object, "genreid"        , debugOutputPrefixStr);
+			begin_timestamp =                JSON_Data.getIntegerValue(object, "begin_timestamp", debugOutputPrefixStr);
+			now_timestamp   =                JSON_Data.getIntegerValue(object, "now_timestamp"  , debugOutputPrefixStr);
+			duration_sec    =                JSON_Data.getIntegerValue(object, "duration_sec"   , debugOutputPrefixStr);
+			remaining       =                JSON_Data.getIntegerValue(object, "remaining"      , debugOutputPrefixStr);
+			sref            =                JSON_Data.getStringValue (object, "sref"           , debugOutputPrefixStr);
+			id              = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Integer, JSON_Data.Value::castToIntegerValue, true, debugOutputPrefixStr);
+			id_null         = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Null   , JSON_Data.Value::castToNullValue   , true, debugOutputPrefixStr);
+			if (id==null && id_null==null)
+				throw new TraverseException("%s.id isn't either an IntegerValue or a NullValue", debugOutputPrefixStr);
 		}
+		
 	}
 
 	public interface BouquetReadInterface {
