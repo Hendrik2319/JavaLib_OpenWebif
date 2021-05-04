@@ -115,45 +115,64 @@ public class OpenWebifTools {
 		return String.format("%s/file?file=%s", baseURL, movieURL);
 	}
 	
+	public static String getIsServicePlayableURL(String baseURL, StationID stationID) {
+		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		// http://et7x00/api/serviceplayable?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
+		return String.format("%s/api/serviceplayable?sRef=%s", baseURL, stationID.toIDStr(true));
+	}
+	
+	public static Boolean getIsServicePlayable(String baseURL, StationID stationID) {
+		String url = getIsServicePlayableURL(baseURL, stationID);
+		return getContentForStationAndParseIt(url, "getIsServicePlayable", baseURL, stationID, result->{
+			ServicePlayableResult parseResult = new ServicePlayableResult(result);
+			if (!parseResult.result) return null;
+			if (!parseResult.sRef.equals(stationID.toIDStr(true))) return null;
+			return parseResult.isplayable;
+		});
+	}
+	
+	public static class ServicePlayableResult {
+	
+		public final boolean result;
+		public final String sRef;
+		public final boolean isplayable;
+	
+		public ServicePlayableResult(Value<NV, V> value) throws TraverseException { this(value,null); }
+		public ServicePlayableResult(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
+			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "ServicePlayableResult";
+			
+			JSON_Object<NV, V> service;
+			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
+			result  = JSON_Data.getBoolValue  (object, "result" , debugOutputPrefixStr);
+			service = JSON_Data.getObjectValue(object, "service", debugOutputPrefixStr);
+			
+			debugOutputPrefixStr += ".service";
+			sRef       = decodeUnicode( JSON_Data.getStringValue(service, "servicereference", debugOutputPrefixStr) );
+			isplayable =                JSON_Data.getBoolValue  (service, "isplayable"      , debugOutputPrefixStr);
+		}
+		
+	}
+
 	public static String getCurrentEPGeventURL(String baseURL, StationID stationID) {
 		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
 		// http://et7x00/api/epgservicenow?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s/api/epgservicenow?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
-
+	
 	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID) {
 		String url = getCurrentEPGeventURL(baseURL, stationID);
-		String content = getContent(url);
-		Value<NV, V> result;
-		try {
-			result = new JSON_Parser<NV,V>(content,null).parse_withParseException();
-		} catch (ParseException e) {
-			System.err.printf("ParseException while parsing JSON text: %s%n", e.getMessage());
-			System.err.printf("   getCurrentEPGevent(baseURL, stationID)%n");
-			System.err.printf("      baseURL  : \"%s\"%n", baseURL);
-			System.err.printf("      stationID: %s%n", stationID.toIDStr(true));
-			return null;
-		}
-		
-		//return new CurrentEPGevent(result);
-		try {
-			CurrentEPGeventResult currentEPGevent = new CurrentEPGeventResult(result);
-			if (!currentEPGevent.result) return null;
-			return currentEPGevent.events;
-		} catch (TraverseException e) {
-			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
-			System.err.printf("   getCurrentEPGevent(baseURL, stationID)%n");
-			System.err.printf("      baseURL  : \"%s\"%n", baseURL);
-			System.err.printf("      stationID: %s%n", stationID.toIDStr(true));
-			return null;
-		}
+		return getContentForStationAndParseIt(url, "getCurrentEPGevent", baseURL, stationID, result->{
+			CurrentEPGeventResult parseResult = new CurrentEPGeventResult(result);
+			if (!parseResult.result) return null;
+			return parseResult.events;
+		});
 	}
 	
 	public static class CurrentEPGeventResult {
-
+	
 		public final boolean result;
 		public final Vector<EPGevent> events;
-
+	
 		public CurrentEPGeventResult(Value<NV, V> value) throws TraverseException { this(value,null); }
 		public CurrentEPGeventResult(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "CurrentEPGevent";
@@ -215,6 +234,38 @@ public class OpenWebifTools {
 		
 	}
 
+	private interface ParseIt<ResultType> {
+		ResultType parseIt(Value<NV,V> result) throws TraverseException;
+	}
+
+	private static <ResultType> ResultType getContentForStationAndParseIt(String url, String taskLabel, String baseURL, StationID stationID, ParseIt<ResultType> parseIt) {
+		return getContentAndParseIt(url, err->{
+			err.printf("   %s(baseURL, stationID)%n", taskLabel);
+			err.printf("      baseURL  : \"%s\"%n", baseURL);
+			err.printf("      stationID: %s%n", stationID.toIDStr(true));
+		}, parseIt);
+	}
+
+	private static <ResultType> ResultType getContentAndParseIt(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseIt<ResultType> parseIt) {
+		String content = getContent(url);
+		Value<NV,V> result;
+		try {
+			result = new JSON_Parser<NV,V>(content,null).parse_withParseException();
+		} catch (ParseException e) {
+			System.err.printf("ParseException while parsing JSON code: %s%n", e.getMessage());
+			writeTaskInfoOnError.accept(System.err);
+			return null;
+		}
+		
+		try {
+			return parseIt.parseIt(result);
+		} catch (TraverseException e) {
+			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
+			writeTaskInfoOnError.accept(System.err);
+			return null;
+		}
+	}
+	
 	public interface BouquetReadInterface {
 		void setIndeterminateProgressTask(String taskTitle);
 		void addBouquet(Bouquet Bouquet);
