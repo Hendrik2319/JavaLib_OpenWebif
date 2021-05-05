@@ -32,11 +32,25 @@ public class StationID implements Comparable<StationID> {
 		return toIDStr()+(addColon ? ":" : "");
 	}
 	public String toIDStr() {
-		return String.join(":", Arrays.asList(numbers).stream().map(i->String.format("%X",i)).toArray(i->new String[i]));
+		return toJoinedHexStrings(":");
 	}
+
 	public String toPiconImageFileName() {
-		return String.join("_", Arrays.asList(numbers).stream().map(i->String.format("%X",i)).toArray(i->new String[i]))+".png";
+		return toJoinedHexStrings("_")+".png";
 	}
+
+	public String toJoinedHexStrings(String delimiter) {
+		return toJoinedStrings(delimiter, "%X");
+	}
+
+	public String toJoinedStrings(String delimiter, String numberFormat) {
+		return String.join(delimiter, getNumbersAsHexStringIterable(numberFormat));
+	}
+
+	private Iterable<String> getNumbersAsHexStringIterable(String numberFormat) {
+		return ()->Arrays.stream(numbers).map(i->String.format(numberFormat,i)).iterator();
+	}
+
 	public static StationID parseIDStr(String idStr) {
 		return parse(idStr.split(":",10), "ID String", idStr);
 	}
