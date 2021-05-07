@@ -4,19 +4,12 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
-import java.net.ConnectException;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.function.Consumer;
@@ -39,7 +32,7 @@ public class OpenWebifTools {
 
 	public static BufferedImage getPicon(String baseURL, StationID stationID) {
 		if (baseURL==null || stationID==null) return null;
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = removeTrailingSlash(baseURL);
 		
 		// http://192.168.2.75/picon/1_0_19_2B66_3F3_1_C00000_0_0_0.png
 		String urlStr = String.format("%s/picon/%s", baseURL, stationID.toPiconImageFileName());
@@ -63,20 +56,7 @@ public class OpenWebifTools {
 	
 	public static ResponseMessage zapToStation(String baseURL, StationID stationID) {
 		String url = getStationZapURL(baseURL, stationID);
-		String response = getContent(url);
-		JSON_Parser<NV,V> parser = new JSON_Parser<>(response,null);
-		try {
-			JSON_Data.Value<NV,V> result = parser.parse_withParseException();
-			if (result!=null) return new ResponseMessage(result);
-		} catch (ParseException e) {
-			System.err.printf("ParseException: %s%n", e.getMessage());
-			//e.printStackTrace();
-		} catch (TraverseException e) {
-			System.err.printf("TraverseException while parsing: %s%n", e.getMessage());
-			//e.printStackTrace();
-		}
-		return null;
-		
+		return getContentForStationAndParseIt(url, "zapToStation", baseURL, stationID, ResponseMessage::new, null);
 	}
 	
 	public static class ResponseMessage {
@@ -95,19 +75,19 @@ public class OpenWebifTools {
 	}
 	
 	public static String getStationZapURL(String baseURL, StationID stationID) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = removeTrailingSlash(baseURL);
 		// http://et7x00/api/zap?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s/api/zap?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
 	
 	public static String getStationStreamURL(String baseURL, StationID stationID) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = removeTrailingSlash(baseURL);
 		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s:8001/%s", baseURL, stationID.toIDStr(true));
 	}
 
 	public static String getMovieURL(String baseURL, MovieList.Movie movie) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = removeTrailingSlash(baseURL);
 		String movieURL = null;
 		try { movieURL = URLEncoder.encode(movie.filename, "UTF-8");
 		} catch (UnsupportedEncodingException e) { System.err.printf("Exception while creating movie URL: [UnsupportedEncodingException] %s%n", e.getMessage()); }
@@ -116,7 +96,7 @@ public class OpenWebifTools {
 	}
 	
 	public static String getIsServicePlayableURL(String baseURL, StationID stationID) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = removeTrailingSlash(baseURL);
 		// http://et7x00/api/serviceplayable?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s/api/serviceplayable?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
@@ -154,9 +134,14 @@ public class OpenWebifTools {
 	}
 
 	public static String getCurrentEPGeventURL(String baseURL, StationID stationID) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = removeTrailingSlash(baseURL);
 		// http://et7x00/api/epgservicenow?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s/api/epgservicenow?sRef=%s", baseURL, stationID.toIDStr(true));
+	}
+
+	private static String removeTrailingSlash(String baseURL) {
+		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		return baseURL;
 	}
 	
 	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID, Consumer<String> setIndeterminateProgressTask) {
@@ -249,9 +234,11 @@ public class OpenWebifTools {
 	static <ResultType> ResultType getContentAndParseIt(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
 		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Get Content from URL");
 		String content = getContent(url);
+		if (content==null) return null;
+		
+		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Code");
 		Value<NV,V> result;
 		try {
-			if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Code");
 			result = new JSON_Parser<NV,V>(content,null).parse_withParseException();
 		} catch (ParseException e) {
 			System.err.printf("ParseException while parsing JSON code: %s%n", e.getMessage());
@@ -259,8 +246,8 @@ public class OpenWebifTools {
 			return null;
 		}
 		
+		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Structure");
 		try {
-			if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Structure");
 			return parseIt.parseIt(result);
 		} catch (TraverseException e) {
 			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
@@ -298,43 +285,31 @@ public class OpenWebifTools {
 	}
 	
 	public static void readBouquets(String baseURL, BouquetReadInterface localInterface) {
-		String jsonStr = null;
-		if (baseURL!=null) {
-			// http://et7x00/api/getallservices
-			localInterface.setIndeterminateProgressTask("Read Content From URL");
-			String url = baseURL;
-			while (url.endsWith("/")) url = url.substring(0, url.length()-1);
-			url += "/api/getallservices";
-			jsonStr = getContentFromURL(url, true, false, true);
-		}
+		if (baseURL==null) return;
+		baseURL = removeTrailingSlash(baseURL);
+		String url = baseURL+"/api/getallservices";
 		
-		JSON_Object<NV,V> rawData = null;
-		if (jsonStr!=null) {
-			localInterface.setIndeterminateProgressTask("Parse Text Content");
-			JSON_Parser<NV,V> parser = new JSON_Parser<>(jsonStr,null);
-			try {
-				JSON_Data.Value<NV,V> result = parser.parse_withParseException();
-				if (result!=null) rawData = JSON_Data.getObjectValue(result);
-			} catch (ParseException e) {
-				System.err.printf("ParseException: %s%n", e.getMessage());
-				//e.printStackTrace();
+		getContentAndParseIt(url, err->{
+			err.printf("   readBouquets(url)%n");
+			err.printf("      url: \"%s\"%n", url);
+		}, parseResult -> {
+			JSON_Object<NV,V> object = JSON_Data.getObjectValue(parseResult);
+			if (object==null) return null;
+			
+			Boolean result = JSON_Data.getBoolValue(object.getValue("result"));
+			if (result==null || result!=true) return null;
+			
+			JSON_Array<NV,V> services = JSON_Data.getArrayValue(object.getValue("services"));
+			if (services==null) return null;
+			
+			for (JSON_Data.Value<NV,V> service:services) {
+				Bouquet bouquet = Bouquet.parse(JSON_Data.getObjectValue(service),localInterface);
+				if (bouquet!=null) localInterface.addBouquet(bouquet);
 			}
-		}
+			
+			return null;
+		}, localInterface::setIndeterminateProgressTask);
 		
-		if (rawData!=null) {
-			localInterface.setIndeterminateProgressTask("Parse JSON Data");
-			Boolean result = JSON_Data.getBoolValue(rawData.getValue("result"));
-			if (result!=null && result==true) {
-				JSON_Array<NV,V> services = JSON_Data.getArrayValue(rawData.getValue("services"));
-				if (services!=null)
-					for (JSON_Data.Value<NV,V> service:services) {
-						Bouquet bouquet = Bouquet.parse(JSON_Data.getObjectValue(service),localInterface);
-						if (bouquet!=null) {
-							localInterface.addBouquet(bouquet);
-						}
-					}
-			}
-		}
 	}
 	
 	public interface MovieListReadInterface {
@@ -352,19 +327,11 @@ public class OpenWebifTools {
 		}
 		System.out.printf("get MovieList: \"%s\"%n", urlStr);
 		
-		movieListReadInterface.setIndeterminateProgressTask("Read Content from URL");
-		String content = getContent(urlStr);
-		
-		movieListReadInterface.setIndeterminateProgressTask("Parse Content");
-		Value<NV, V> result = new JSON_Parser<NV,V>(content,null).parse();
-		
-		movieListReadInterface.setIndeterminateProgressTask("Create MovieList");
-		try {
-			return new MovieList(result);
-		} catch (TraverseException e) {
-			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
-			return null;
-		}
+		return getContentAndParseIt(urlStr, err->{
+			err.printf("   readMovieList(baseURL, dir)%n");
+			err.printf("      baseURL: \"%s\"%n", baseURL);
+			err.printf("      dir    : \"%s\"%n", dir);
+		}, MovieList::new, movieListReadInterface::setIndeterminateProgressTask);
 	}
 
 	public static String decodeUnicode(String str) {
@@ -393,6 +360,7 @@ public class OpenWebifTools {
 		try { conn = url.openConnection(); }
 		catch (IOException e) { System.err.printf("url.openConnection -> IOException: %s%n", e.getMessage()); return null; }
 		
+		conn.setConnectTimeout(5000);
 		conn.setDoInput(true);
 		try { conn.connect(); }
 		catch (IOException e) { System.err.printf("conn.connect -> IOException: %s%n", e.getMessage()); return null; }
@@ -409,100 +377,6 @@ public class OpenWebifTools {
 		}
 		
 		return new String(storage.toByteArray());
-	}
-	
-	private static String getContentFromURL(String urlStr, boolean verbose, boolean showContent, boolean verboseOnError) {
-		
-		if (verbose) System.out.println("URL: "+urlStr);
-		URL url;
-		try { url = new URL(urlStr); }
-		catch (MalformedURLException e2) { e2.printStackTrace(); return null; }
-		
-		if (verbose) System.out.println("Open Connection ...");
-		HttpURLConnection connection;
-		try { connection = (HttpURLConnection)url.openConnection(); }
-		catch (IOException e) { e.printStackTrace(); return null; }
-		
-		connection.setDoInput(true);
-		
-		connection.setConnectTimeout(2000);
-		
-		if (verbose) System.out.println("Connect ...");
-		try { connection.connect(); }
-		catch (ConnectException e) {
-			switch (e.getMessage()) {
-			case "Connection refused: connect":
-				if (verboseOnError) System.err.println("Connection refused at connect");
-				break;
-			case "Connection timed out: connect":
-				if (verboseOnError) System.err.println("Connection timed out at connect");
-				break;
-			default:
-				e.printStackTrace();
-			}
-			return null;
-		}
-		catch (SocketTimeoutException e) {
-			if (e.getMessage().equals("connect timed out")) {
-				if (verboseOnError) System.err.println("Socket Timeout");
-			} else
-				e.printStackTrace();
-			return null;
-		}
-		catch (IOException e) { e.printStackTrace(); return null; }
-		
-		Integer httpResponseCode;
-		try { httpResponseCode = connection.getResponseCode(); } catch (IOException e1) { httpResponseCode=null; }
-		if (verbose || (verboseOnError && (httpResponseCode==null || httpResponseCode!=200))) {
-			String responseMessage;
-			try { responseMessage = connection.getResponseMessage(); } catch (IOException e) { responseMessage="????"; }
-			if (httpResponseCode!=200) {
-				System.err.printf("HTTP Response: %s \"%s\"%n", httpResponseCode==null ? "???" : httpResponseCode.intValue(), responseMessage);
-				return null;
-			} else {
-				System.out.printf("HTTP Response: %s \"%s\"%n", httpResponseCode==null ? "???" : httpResponseCode.intValue(), responseMessage);
-			}
-		}
-		
-		if (verbose) System.out.println("Read Content ...");
-		Object content;
-		if (connection.getContentLength()>0)
-			try { content = connection.getContent(); }
-			catch (IOException e) { if (verboseOnError) /*showConnection(connection);*/ e.printStackTrace(); connection.disconnect(); return null; }
-		else
-			content = null;
-		if (verbose && showContent) System.out.println("Content: "+content);
-		
-		String string = null;
-		if (content instanceof InputStream) {
-			InputStream input = (InputStream)content;
-			byte[] bytes = new byte[connection.getContentLength()];
-			int n,pos=0;
-			try { while ( (n=input.read(bytes, pos, bytes.length-pos))>=0 ) pos += n; }
-			catch (IOException e) { e.printStackTrace(); if (verbose) System.out.println("abort reading response");}
-			
-			if (verbose && showContent) {
-				String bytesReadStr = pos!=bytes.length ? (" "+pos+" of "+bytes.length+" bytes "):"";
-				if (pos<1000) {
-					System.out.println("Content (bytes read): "+bytesReadStr+""+Arrays.toString(bytes));
-				}
-			}
-			
-			string = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(bytes, 0, pos)).toString();
-			
-			if (verbose && showContent) {
-				if (string.length()>1000) {
-					System.out.println("Content (as String): "+string.substring(0, 100)+" ...");
-					System.out.println("                     ... "+string.substring(string.length()-100,string.length()));
-				} else
-					System.out.println("Content (as String): "+string);
-			}
-		} else
-			if (verboseOnError) /*showConnection(connection)*/; 
-		
-		connection.disconnect();
-		
-		return string;
 	}
 
 }

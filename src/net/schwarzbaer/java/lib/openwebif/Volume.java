@@ -45,11 +45,11 @@ public class Volume {
 		
 		ParseResult(Value<NV, V> value) throws TraverseException { this(value,null); }
 		ParseResult(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
-			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "Volume.RawResult";
+			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "Volume.ParseResult";
 			
 			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
 			result = JSON_Data.getBoolValue (object, "result", debugOutputPrefixStr);
-			values = new Values(object,debugOutputPrefixStr);
+			values = new Values(object,debugOutputPrefixStr+".Values");
 		}
 		
 	}
