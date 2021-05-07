@@ -1,5 +1,6 @@
 package net.schwarzbaer.java.lib.openwebif;
 
+import java.io.PrintStream;
 import java.util.Vector;
 
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data;
@@ -50,6 +51,16 @@ public class MovieList {
 			this.movies.add(new Movie(movies.get(i), debugOutputPrefixStr+".movies["+i+"]"));
 	}
 	
+	public void printTo(PrintStream out) {
+		out.printf("MovieList \"%s\"%n", directory);
+		out.printf("   bookmarks: %d%n", bookmarks.size());
+		for (String bookmark:bookmarks)
+			out.printf("      \"%s\"%n", bookmark);
+		out.printf("   movies: %d%n", movies.size());
+		for (Movie movie:movies)
+			out.printf("      %s%n", movie);
+	}
+
 	public static class Movie {
 		public final String begintime;
 		public final String description;
@@ -107,6 +118,10 @@ public class MovieList {
 			tags                = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "tags"               , debugOutputPrefixStr) );
 			
 			length_s = parseLength(lengthStr);
+		}
+
+		@Override public String toString() {
+			return filename_stripped;
 		}
 
 		private static Integer parseLength(String lengthStr) {
