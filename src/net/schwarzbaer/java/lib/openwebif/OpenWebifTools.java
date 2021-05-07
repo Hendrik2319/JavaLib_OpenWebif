@@ -121,14 +121,14 @@ public class OpenWebifTools {
 		return String.format("%s/api/serviceplayable?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
 	
-	public static Boolean getIsServicePlayable(String baseURL, StationID stationID) {
+	public static Boolean getIsServicePlayable(String baseURL, StationID stationID, Consumer<String> setIndeterminateProgressTask) {
 		String url = getIsServicePlayableURL(baseURL, stationID);
 		return getContentForStationAndParseIt(url, "getIsServicePlayable", baseURL, stationID, result->{
 			ServicePlayableResult parseResult = new ServicePlayableResult(result);
 			if (!parseResult.result) return null;
 			if (!parseResult.sRef.equals(stationID.toIDStr(true))) return null;
 			return parseResult.isplayable;
-		});
+		}, setIndeterminateProgressTask);
 	}
 	
 	public static class ServicePlayableResult {
@@ -159,13 +159,13 @@ public class OpenWebifTools {
 		return String.format("%s/api/epgservicenow?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
 	
-	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID) {
+	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID, Consumer<String> setIndeterminateProgressTask) {
 		String url = getCurrentEPGeventURL(baseURL, stationID);
 		return getContentForStationAndParseIt(url, "getCurrentEPGevent", baseURL, stationID, result->{
 			CurrentEPGeventResult parseResult = new CurrentEPGeventResult(result);
 			if (!parseResult.result) return null;
 			return parseResult.events;
-		});
+		}, setIndeterminateProgressTask);
 	}
 	
 	public static class CurrentEPGeventResult {
@@ -234,22 +234,24 @@ public class OpenWebifTools {
 		
 	}
 
-	private interface ParseIt<ResultType> {
+	interface ParseIt<ResultType> {
 		ResultType parseIt(Value<NV,V> result) throws TraverseException;
 	}
 
-	private static <ResultType> ResultType getContentForStationAndParseIt(String url, String taskLabel, String baseURL, StationID stationID, ParseIt<ResultType> parseIt) {
+	static <ResultType> ResultType getContentForStationAndParseIt(String url, String taskLabel, String baseURL, StationID stationID, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
 		return getContentAndParseIt(url, err->{
 			err.printf("   %s(baseURL, stationID)%n", taskLabel);
 			err.printf("      baseURL  : \"%s\"%n", baseURL);
 			err.printf("      stationID: %s%n", stationID.toIDStr(true));
-		}, parseIt);
+		}, parseIt, setIndeterminateProgressTask);
 	}
 
-	private static <ResultType> ResultType getContentAndParseIt(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseIt<ResultType> parseIt) {
+	static <ResultType> ResultType getContentAndParseIt(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
+		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Get Content from URL");
 		String content = getContent(url);
 		Value<NV,V> result;
 		try {
+			if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Code");
 			result = new JSON_Parser<NV,V>(content,null).parse_withParseException();
 		} catch (ParseException e) {
 			System.err.printf("ParseException while parsing JSON code: %s%n", e.getMessage());
@@ -258,6 +260,7 @@ public class OpenWebifTools {
 		}
 		
 		try {
+			if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Structure");
 			return parseIt.parseIt(result);
 		} catch (TraverseException e) {
 			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
