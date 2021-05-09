@@ -15,14 +15,17 @@ public class Volume {
 		state, up, down, mute, set
 	}
 	
-	public static Values getState  (String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.state), setIndeterminateProgressTask); }
-	public static Values setVolUp  (String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.up   ), setIndeterminateProgressTask); }
-	public static Values setVolDown(String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.down ), setIndeterminateProgressTask); }
-	public static Values setVolMute(String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.mute ), setIndeterminateProgressTask); }
-	public static Values setVol(String baseURL, int value, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.set, value), setIndeterminateProgressTask); }
+	public static Values getState         (String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.state), baseURL, "getState"  , setIndeterminateProgressTask); }
+	public static Values setVolUp         (String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.up   ), baseURL, "setVolUp"  , setIndeterminateProgressTask); }
+	public static Values setVolDown       (String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.down ), baseURL, "setVolDown", setIndeterminateProgressTask); }
+	public static Values setVolMute       (String baseURL, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.mute ), baseURL, "setVolMute", setIndeterminateProgressTask); }
+	public static Values setVol(String baseURL, int value, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.set, value), baseURL, "setVol["+value+"]", setIndeterminateProgressTask); }
 
-	private static Values getContentAndParseIt(String url, Consumer<String> setIndeterminateProgressTask) {
-		return OpenWebifTools.getContentAndParseIt(url, out->{}, result -> {
+	private static Values getContentAndParseIt(String url, String baseURL, String commandLabel, Consumer<String> setIndeterminateProgressTask) {
+		return OpenWebifTools.getContentAndParseIt(url, err->{
+			err.printf("   %s(baseURL)%n", commandLabel);
+			err.printf("      baseURL  : \"%s\"%n", baseURL);
+		}, result -> {
 			ParseResult parseResult = new ParseResult(result);
 			if (!parseResult.result) return null;
 			return parseResult.values;
@@ -33,7 +36,7 @@ public class Volume {
 		return getURL(baseURL, cmd, null);
 	}
 	private static String getURL(String baseURL, Commands cmd, Integer value) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		// "http://et7x00/api/vol?set=mute"
 		return String.format("%s/api/vol?set=%s%s", baseURL, cmd.toString(), value==null ? "" : value);
 	}

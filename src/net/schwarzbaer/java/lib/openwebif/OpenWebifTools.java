@@ -32,7 +32,7 @@ public class OpenWebifTools {
 
 	public static BufferedImage getPicon(String baseURL, StationID stationID) {
 		if (baseURL==null || stationID==null) return null;
-		baseURL = removeTrailingSlash(baseURL);
+		baseURL = removeAllTrailingSlashes(baseURL);
 		
 		// http://192.168.2.75/picon/1_0_19_2B66_3F3_1_C00000_0_0_0.png
 		String urlStr = String.format("%s/picon/%s", baseURL, stationID.toPiconImageFileName());
@@ -75,19 +75,19 @@ public class OpenWebifTools {
 	}
 	
 	public static String getStationZapURL(String baseURL, StationID stationID) {
-		baseURL = removeTrailingSlash(baseURL);
+		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://et7x00/api/zap?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s/api/zap?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
 	
 	public static String getStationStreamURL(String baseURL, StationID stationID) {
-		baseURL = removeTrailingSlash(baseURL);
+		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s:8001/%s", baseURL, stationID.toIDStr(true));
 	}
 
 	public static String getMovieURL(String baseURL, MovieList.Movie movie) {
-		baseURL = removeTrailingSlash(baseURL);
+		baseURL = removeAllTrailingSlashes(baseURL);
 		String movieURL = null;
 		try { movieURL = URLEncoder.encode(movie.filename, "UTF-8");
 		} catch (UnsupportedEncodingException e) { System.err.printf("Exception while creating movie URL: [UnsupportedEncodingException] %s%n", e.getMessage()); }
@@ -96,7 +96,7 @@ public class OpenWebifTools {
 	}
 	
 	public static String getIsServicePlayableURL(String baseURL, StationID stationID) {
-		baseURL = removeTrailingSlash(baseURL);
+		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://et7x00/api/serviceplayable?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s/api/serviceplayable?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
@@ -134,16 +134,11 @@ public class OpenWebifTools {
 	}
 
 	public static String getCurrentEPGeventURL(String baseURL, StationID stationID) {
-		baseURL = removeTrailingSlash(baseURL);
+		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://et7x00/api/epgservicenow?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s/api/epgservicenow?sRef=%s", baseURL, stationID.toIDStr(true));
 	}
 
-	private static String removeTrailingSlash(String baseURL) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
-		return baseURL;
-	}
-	
 	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID, Consumer<String> setIndeterminateProgressTask) {
 		String url = getCurrentEPGeventURL(baseURL, stationID);
 		return getContentForStationAndParseIt(url, "getCurrentEPGevent", baseURL, stationID, result->{
@@ -153,7 +148,7 @@ public class OpenWebifTools {
 		}, setIndeterminateProgressTask);
 	}
 	
-	public static class CurrentEPGeventResult {
+	private static class CurrentEPGeventResult {
 	
 		public final boolean result;
 		public final Vector<EPGevent> events;
@@ -175,87 +170,84 @@ public class OpenWebifTools {
 			
 			events = new Vector<EPGevent>();
 			for (int i=0; i<eventsRaw.size(); i++)
-				events.add(new EPGevent(eventsRaw.get(i), debugOutputPrefixStr+"["+i+"]"));
+				events.add(EPGevent.parse(eventsRaw.get(i), debugOutputPrefixStr+"["+i+"]"));
 		}
 	}
 
-	public static class EPGevent {
-		public final String station_name;
-		public final String title;
-		public final String shortdesc;
-		public final String longdesc;
-		public final String genre;
-		public final long genreid;
-		public final long begin_timestamp;
-		public final long now_timestamp;
-		public final long duration_sec;
-		public final long remaining;
-		public final String sref;
-		public final Long id;
-	
-		public EPGevent(Value<NV, V> value) throws TraverseException { this(value,null); }
-		public EPGevent(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
-			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "EPGevent";
-			
-			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
-			
-			Object id_null;
-			station_name    = decodeUnicode( JSON_Data.getStringValue (object, "sname"          , debugOutputPrefixStr) );
-			title           = decodeUnicode( JSON_Data.getStringValue (object, "title"          , debugOutputPrefixStr) );
-			shortdesc       = decodeUnicode( JSON_Data.getStringValue (object, "shortdesc"      , debugOutputPrefixStr) );
-			longdesc        = decodeUnicode( JSON_Data.getStringValue (object, "longdesc"       , debugOutputPrefixStr) );
-			genre           = decodeUnicode( JSON_Data.getStringValue (object, "genre"          , debugOutputPrefixStr) );
-			genreid         =                JSON_Data.getIntegerValue(object, "genreid"        , debugOutputPrefixStr);
-			begin_timestamp =                JSON_Data.getIntegerValue(object, "begin_timestamp", debugOutputPrefixStr);
-			now_timestamp   =                JSON_Data.getIntegerValue(object, "now_timestamp"  , debugOutputPrefixStr);
-			duration_sec    =                JSON_Data.getIntegerValue(object, "duration_sec"   , debugOutputPrefixStr);
-			remaining       =                JSON_Data.getIntegerValue(object, "remaining"      , debugOutputPrefixStr);
-			sref            =                JSON_Data.getStringValue (object, "sref"           , debugOutputPrefixStr);
-			id              = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Integer, JSON_Data.Value::castToIntegerValue, true, debugOutputPrefixStr);
-			id_null         = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Null   , JSON_Data.Value::castToNullValue   , true, debugOutputPrefixStr);
-			if (id==null && id_null==null)
-				throw new TraverseException("%s.id isn't either an IntegerValue or a NullValue", debugOutputPrefixStr);
-		}
+	public static CurrentStation getCurrentStation(String baseURL, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		baseURL = removeAllTrailingSlashes(baseURL);
+		String url = baseURL+"/api/getcurrent";
 		
-	}
-
-	interface ParseIt<ResultType> {
-		ResultType parseIt(Value<NV,V> result) throws TraverseException;
-	}
-
-	static <ResultType> ResultType getContentForStationAndParseIt(String url, String taskLabel, String baseURL, StationID stationID, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
 		return getContentAndParseIt(url, err->{
-			err.printf("   %s(baseURL, stationID)%n", taskLabel);
-			err.printf("      baseURL  : \"%s\"%n", baseURL);
-			err.printf("      stationID: %s%n", stationID.toIDStr(true));
-		}, parseIt, setIndeterminateProgressTask);
+			err.printf("   getCurrentStation(url)%n");
+			err.printf("      url: \"%s\"%n", url);
+		}, CurrentStation::new, setIndeterminateProgressTask);
 	}
+	
+	public static class CurrentStation {
 
-	static <ResultType> ResultType getContentAndParseIt(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
-		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Get Content from URL");
-		String content = getContent(url);
-		if (content==null) return null;
+		public final StationInfo stationInfo;
+		public final EPGevent currentEPGevent;
+		public final EPGevent nextEPGevent;
 		
-		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Code");
-		Value<NV,V> result;
-		try {
-			result = new JSON_Parser<NV,V>(content,null).parse_withParseException();
-		} catch (ParseException e) {
-			System.err.printf("ParseException while parsing JSON code: %s%n", e.getMessage());
-			writeTaskInfoOnError.accept(System.err);
-			return null;
-		}
-		
-		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Structure");
-		try {
-			return parseIt.parseIt(result);
-		} catch (TraverseException e) {
-			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
-			writeTaskInfoOnError.accept(System.err);
-			return null;
+		public CurrentStation(Value<NV, V> value) throws TraverseException { this(value,null); }
+		public CurrentStation(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
+			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "CurrentStation";
+			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
+			stationInfo     = new StationInfo(JSON_Data.getObjectValue(object,"info", debugOutputPrefixStr),debugOutputPrefixStr+".info");
+			currentEPGevent = new EPGevent   (JSON_Data.getObjectValue(object,"now" , debugOutputPrefixStr),debugOutputPrefixStr+".now" );
+			nextEPGevent    = new EPGevent   (JSON_Data.getObjectValue(object,"next", debugOutputPrefixStr),debugOutputPrefixStr+".next");
 		}
 	}
 	
+	public static class StationInfo {
+		public final String bouquetName;
+		public final String bouquetRef;
+		public final String serviceName;
+		public final String serviceRef;
+		public final String provider;
+		public final long width;
+		public final long height;
+		public final long aspect;
+		public final boolean isWideScreen;
+		public final long onid;
+		public final long txtpid;
+		public final long pmtpid;
+		public final long tsid;
+		public final long pcrpid;
+		public final long sid;
+		public final long namespace;
+		public final long apid;
+		public final long vpid;
+		public final boolean result;
+		public final StationID stationID;
+		
+		public StationInfo(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
+			bouquetName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqname"      , debugOutputPrefixStr) ); // "bqname"      : "Sender (DVB-S2)",
+			bouquetRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqref"       , debugOutputPrefixStr) ); // "bqref"       : "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.sender_dvb_s2.tv%22 ORDER BY bouquet",
+			serviceName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "name"        , debugOutputPrefixStr) ); // "name"        : "WELT",
+			serviceRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "ref"         , debugOutputPrefixStr) ); // "ref"         : "1:0:1:445F:453:1:C00000:0:0:0:",
+			provider     = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider"    , debugOutputPrefixStr) ); // "provider"    : "Sonstige Astra",
+			width        =                               JSON_Data.getIntegerValue(object, "width"       , debugOutputPrefixStr);   // "width"       : 720,
+			height       =                               JSON_Data.getIntegerValue(object, "height"      , debugOutputPrefixStr);   // "height"      : 576,
+			aspect       =                               JSON_Data.getIntegerValue(object, "aspect"      , debugOutputPrefixStr);   // "aspect"      : 3,
+			isWideScreen =                               JSON_Data.getBoolValue   (object, "iswidescreen", debugOutputPrefixStr);   // "iswidescreen": true
+			onid         =                               JSON_Data.getIntegerValue(object, "onid"        , debugOutputPrefixStr);   // "onid"        : 1,
+			txtpid       =                               JSON_Data.getIntegerValue(object, "txtpid"      , debugOutputPrefixStr);   // "txtpid"      : 35,
+			pmtpid       =                               JSON_Data.getIntegerValue(object, "pmtpid"      , debugOutputPrefixStr);   // "pmtpid"      : 99,
+			tsid         =                               JSON_Data.getIntegerValue(object, "tsid"        , debugOutputPrefixStr);   // "tsid"        : 1107,
+			pcrpid       =                               JSON_Data.getIntegerValue(object, "pcrpid"      , debugOutputPrefixStr);   // "pcrpid"      : 1023,
+			sid          =                               JSON_Data.getIntegerValue(object, "sid"         , debugOutputPrefixStr);   // "sid"         : 17503,
+			namespace    =                               JSON_Data.getIntegerValue(object, "namespace"   , debugOutputPrefixStr);   // "namespace"   : 12582912,
+			apid         =                               JSON_Data.getIntegerValue(object, "apid"        , debugOutputPrefixStr);   // "apid"        : 1024,
+			vpid         =                               JSON_Data.getIntegerValue(object, "vpid"        , debugOutputPrefixStr);   // "vpid"        : 1023,
+			result       =                               JSON_Data.getBoolValue   (object, "result"      , debugOutputPrefixStr);   // "result"      : true,
+			
+			stationID = serviceRef==null ? null : StationID.parseIDStr( removeTrailingStr(serviceRef, ":") );
+		}
+	}
+
 	public interface BouquetReadInterface {
 		void setIndeterminateProgressTask(String taskTitle);
 		void addBouquet(Bouquet Bouquet);
@@ -286,7 +278,7 @@ public class OpenWebifTools {
 	
 	public static void readBouquets(String baseURL, BouquetReadInterface localInterface) {
 		if (baseURL==null) return;
-		baseURL = removeTrailingSlash(baseURL);
+		baseURL = removeAllTrailingSlashes(baseURL);
 		String url = baseURL+"/api/getallservices";
 		
 		getContentAndParseIt(url, err->{
@@ -332,6 +324,57 @@ public class OpenWebifTools {
 			err.printf("      baseURL: \"%s\"%n", baseURL);
 			err.printf("      dir    : \"%s\"%n", dir);
 		}, MovieList::new, movieListReadInterface::setIndeterminateProgressTask);
+	}
+
+	interface ParseIt<ResultType> {
+		ResultType parseIt(Value<NV,V> result) throws TraverseException;
+	}
+
+	static <ResultType> ResultType getContentForStationAndParseIt(String url, String commandLabel, String baseURL, StationID stationID, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
+		return getContentAndParseIt(url, err->{
+			err.printf("   %s(baseURL, stationID)%n", commandLabel);
+			err.printf("      baseURL  : \"%s\"%n", baseURL);
+			err.printf("      stationID: %s%n", stationID.toIDStr(true));
+		}, parseIt, setIndeterminateProgressTask);
+	}
+
+	static <ResultType> ResultType getContentAndParseIt(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
+		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Get Content from URL");
+		String content = getContent(url);
+		if (content==null) return null;
+		
+		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Code");
+		Value<NV,V> result;
+		try {
+			result = new JSON_Parser<NV,V>(content,null).parse_withParseException();
+		} catch (ParseException e) {
+			System.err.printf("ParseException while parsing JSON code: %s%n", e.getMessage());
+			writeTaskInfoOnError.accept(System.err);
+			return null;
+		}
+		
+		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Structure");
+		try {
+			return parseIt.parseIt(result);
+		} catch (TraverseException e) {
+			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
+			writeTaskInfoOnError.accept(System.err);
+			return null;
+		}
+	}
+
+	static String removeAllTrailingSlashes(String baseURL) {
+		return removeAllTrailingStrs(baseURL, "/");
+	}
+
+	static String removeAllTrailingStrs(String str, String suffix) {
+		while (str.endsWith(suffix)) str = str.substring(0, str.length()-suffix.length());
+		return str;
+	}
+
+	static String removeTrailingStr(String str, String suffix) {
+		if (str.endsWith(suffix)) str = str.substring(0, str.length()-suffix.length());
+		return str;
 	}
 
 	public static String decodeUnicode(String str) {

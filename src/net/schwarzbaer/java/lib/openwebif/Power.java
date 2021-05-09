@@ -34,16 +34,24 @@ public class Power {
 	}
 	
 	public static Values getState(String baseURL, Consumer<String> setIndeterminateProgressTask) {
-		return getContentAndParseIt(getURL(baseURL, null), setIndeterminateProgressTask);
+		return getContentAndParseIt(baseURL, null, setIndeterminateProgressTask);
 	}
 	
 	public static Values setState(String baseURL, Commands cmd, Consumer<String> setIndeterminateProgressTask) {
-		return getContentAndParseIt(getURL(baseURL, cmd), setIndeterminateProgressTask);
+		return getContentAndParseIt(baseURL, cmd, setIndeterminateProgressTask);
 	}
 
-	private static Values getContentAndParseIt(String url, Consumer<String> setIndeterminateProgressTask) {
-		return OpenWebifTools.getContentAndParseIt(url, out->{
-			// TODO
+	private static Values getContentAndParseIt(String baseURL, Commands cmd, Consumer<String> setIndeterminateProgressTask) {
+		String url = getURL(baseURL, cmd);
+		return OpenWebifTools.getContentAndParseIt(url, err->{
+			if (cmd==null) {
+				err.printf("   getState(baseURL)%n");
+				err.printf("      baseURL: \"%s\"%n", baseURL);
+			} else {
+				err.printf("   setState(baseURL,cmd)%n");
+				err.printf("      baseURL: \"%s\"%n", baseURL);
+				err.printf("      cmd    : %s[%d,\"%s\"]%n", cmd.name(), cmd.value, cmd.title);
+			}
 		}, result -> {
 			ParseResult parseResult = new ParseResult(result);
 			if (!parseResult.result) return null;
@@ -52,10 +60,9 @@ public class Power {
 	}
 	
 	private static String getURL(String baseURL, Commands cmd) {
-		while (baseURL.endsWith("/")) baseURL = baseURL.substring(0, baseURL.length()-1);
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		// "http://et7x00/api/powerstate?newstate=0"
-		if (cmd==null)
-			return String.format("%s/api/powerstate", baseURL);
+		if (cmd==null) return String.format("%s/api/powerstate", baseURL);
 		return String.format("%s/api/powerstate?newstate=%d", baseURL, cmd.value);
 	}
 
