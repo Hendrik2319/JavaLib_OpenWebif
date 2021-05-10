@@ -8,6 +8,8 @@ import net.schwarzbaer.java.lib.openwebif.OpenWebifTools.NV;
 import net.schwarzbaer.java.lib.openwebif.OpenWebifTools.V;
 
 public class EPGevent {
+	private static boolean SHOW_PARSE_PROGRESS = false;
+	
 	public final String station_name;
 	public final String title;
 	public final String shortdesc;
@@ -31,20 +33,20 @@ public class EPGevent {
 	
 	public EPGevent(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
 		Object id_null;
-		station_name    = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "sname"          , debugOutputPrefixStr) );
-		title           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "title"          , debugOutputPrefixStr) );
-		shortdesc       = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "shortdesc"      , debugOutputPrefixStr) );
-		longdesc        = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "longdesc"       , debugOutputPrefixStr) );
-		genre           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "genre"          , debugOutputPrefixStr) );
-		genreid         =                               JSON_Data.getIntegerValue(object, "genreid"        , debugOutputPrefixStr);
-		begin_timestamp =                               JSON_Data.getIntegerValue(object, "begin_timestamp", debugOutputPrefixStr);
-		now_timestamp   =                               JSON_Data.getIntegerValue(object, "now_timestamp"  , debugOutputPrefixStr);
-		duration_sec    =                               JSON_Data.getIntegerValue(object, "duration_sec"   , debugOutputPrefixStr);
-		remaining       =                               JSON_Data.getIntegerValue(object, "remaining"      , debugOutputPrefixStr);
-		sref            =                               JSON_Data.getStringValue (object, "sref"           , debugOutputPrefixStr);
-		provider        = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider"       , true, false, debugOutputPrefixStr) );
-		id              = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Integer, JSON_Data.Value::castToIntegerValue, true, debugOutputPrefixStr);
-		id_null         = JSON_Data.getValue(object, "id", false, JSON_Data.Value.Type.Null   , JSON_Data.Value::castToNullValue   , true, debugOutputPrefixStr);
+		station_name    = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "sname"          , debugOutputPrefixStr) ); if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: sname"          );
+		title           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "title"          , debugOutputPrefixStr) ); if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: title"          );
+		shortdesc       = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "shortdesc"      , debugOutputPrefixStr) ); if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: shortdesc"      );
+		longdesc        = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "longdesc"       , debugOutputPrefixStr) ); if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: longdesc"       );
+		genre           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "genre"          , debugOutputPrefixStr) ); if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: genre"          );
+		genreid         =                               JSON_Data.getIntegerValue(object, "genreid"        , debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: genreid"        );
+		begin_timestamp =                               JSON_Data.getIntegerValue(object, "begin_timestamp", debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: begin_timestamp");
+		now_timestamp   =                               JSON_Data.getIntegerValue(object, "now_timestamp"  , debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: now_timestamp"  );
+		duration_sec    =                               JSON_Data.getIntegerValue(object, "duration_sec"   , debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: duration_sec"   );
+		remaining       =                               JSON_Data.getIntegerValue(object, "remaining"      , debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: remaining"      );
+		sref            =                               JSON_Data.getStringValue (object, "sref"           , debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: sref"           );
+		provider        = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider"       , true, false, debugOutputPrefixStr) ); if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: provider"       );
+		id              =                               JSON_Data.getIntegerValue(object, "id", false, true, debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: id");
+		id_null         =                               JSON_Data.getNullValue   (object, "id", false, true, debugOutputPrefixStr);   if (SHOW_PARSE_PROGRESS) System.out.println("EPGevent: id (NULL)");
 		if (id==null && id_null==null)
 			throw new TraverseException("%s.id isn't either an IntegerValue or a NullValue", debugOutputPrefixStr);
 	}

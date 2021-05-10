@@ -27,8 +27,9 @@ import net.schwarzbaer.java.lib.jsonparser.JSON_Parser.ParseException;
 public class OpenWebifTools {
 
 	static class NV extends JSON_Data.NamedValueExtra.Dummy{}
-
 	static class V extends JSON_Data.ValueExtra.Dummy{}
+	
+	private static final boolean SHOW_PARSE_PROGRESS = false;
 
 	public static BufferedImage getPicon(String baseURL, StationID stationID) {
 		if (baseURL==null || stationID==null) return null;
@@ -54,15 +55,59 @@ public class OpenWebifTools {
 		}
 	}
 	
-	public static ResponseMessage zapToStation(String baseURL, StationID stationID) {
-		String url = getStationZapURL(baseURL, stationID);
-		return getContentForStationAndParseIt(url, "zapToStation", baseURL, stationID, ResponseMessage::new, null);
+	public enum MessageType {
+		YESNO(0), INFO(1), WARNING(2), ERROR(3);
+		private int value;
+		MessageType(int value) { this.value = value; }
 	}
 	
-	public static class ResponseMessage {
+	public static MessageResponse sendMessage(String baseURL, String message, MessageType type, Integer timeOut_sec, Consumer<String> setIndeterminateProgressTask) {
+		baseURL = removeAllTrailingSlashes(baseURL);
+		String encodedMessage = encodeForURL(message,"preparing message");
+		
+		// http://et7x00/api/message?text=text&type=1&timeout=15
+		String url = String.format("%s/api/message?text=%s&type=%d", baseURL, encodedMessage, type.value);
+		if (timeOut_sec!=null) url += String.format("&timeout=%d", timeOut_sec.intValue());
+		
+		String baseURLStr = baseURL;
+		return getContentAndParseIt(url, err->{
+				err.printf("   sendMessage(baseURL, message, type, timeOut)%n");
+				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+				err.printf("      message: \"%s\" -> \"%s\"%n", message, encodedMessage);
+				err.printf("      type   : %s[%d]%n", type, type.value);
+				if (timeOut_sec!=null)
+					err.printf("      timeOut: %d%n", timeOut_sec);
+			},
+			MessageResponse::new,
+			setIndeterminateProgressTask
+		);
+	}
+	
+	public static MessageResponse getMessageAnswer(String baseURL, Consumer<String> setIndeterminateProgressTask) {
+		baseURL = removeAllTrailingSlashes(baseURL);
+		
+		// http://et7x00/api/messageanswer
+		String url = String.format("%s/api/messageanswer", baseURL);
+		
+		String baseURLStr = baseURL;
+		return getContentAndParseIt(url, err->{
+				err.printf("   getMessageAnswer(baseURL)%n");
+				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+			},
+			MessageResponse::new,
+			setIndeterminateProgressTask
+		);
+	}
+
+	public static MessageResponse zapToStation(String baseURL, StationID stationID) {
+		String url = getStationZapURL(baseURL, stationID);
+		return getContentForStationAndParseIt(url, "zapToStation", baseURL, stationID, MessageResponse::new, null);
+	}
+	
+	public static class MessageResponse {
 		public final String message;
 		public final boolean result;
-		ResponseMessage(JSON_Data.Value<NV,V> response) throws TraverseException {
+		MessageResponse(JSON_Data.Value<NV,V> response) throws TraverseException {
 			JSON_Object<NV, V> object = JSON_Data.getObjectValue(response, "Response");
 			message = JSON_Data.getStringValue(object, "message", "Response");
 			result  = JSON_Data.getBoolValue  (object, "result" , "Response");
@@ -88,10 +133,7 @@ public class OpenWebifTools {
 
 	public static String getMovieURL(String baseURL, MovieList.Movie movie) {
 		baseURL = removeAllTrailingSlashes(baseURL);
-		String movieURL = null;
-		try { movieURL = URLEncoder.encode(movie.filename, "UTF-8");
-		} catch (UnsupportedEncodingException e) { System.err.printf("Exception while creating movie URL: [UnsupportedEncodingException] %s%n", e.getMessage()); }
-		
+		String movieURL = encodeForURL(movie.filename, "creating movie URL");
 		return String.format("%s/file?file=%s", baseURL, movieURL);
 	}
 	
@@ -195,9 +237,16 @@ public class OpenWebifTools {
 		public CurrentStation(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "CurrentStation";
 			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
-			stationInfo     = new StationInfo(JSON_Data.getObjectValue(object,"info", debugOutputPrefixStr),debugOutputPrefixStr+".info");
-			currentEPGevent = new EPGevent   (JSON_Data.getObjectValue(object,"now" , debugOutputPrefixStr),debugOutputPrefixStr+".now" );
-			nextEPGevent    = new EPGevent   (JSON_Data.getObjectValue(object,"next", debugOutputPrefixStr),debugOutputPrefixStr+".next");
+			
+			
+			try {
+				stationInfo     = new StationInfo(JSON_Data.getObjectValue(object,"info", debugOutputPrefixStr),debugOutputPrefixStr+".info"); if (SHOW_PARSE_PROGRESS) System.out.println("CurrentStation: info");
+				currentEPGevent = new EPGevent   (JSON_Data.getObjectValue(object,"now" , debugOutputPrefixStr),debugOutputPrefixStr+".now" ); if (SHOW_PARSE_PROGRESS) System.out.println("CurrentStation: now" );
+				nextEPGevent    = new EPGevent   (JSON_Data.getObjectValue(object,"next", debugOutputPrefixStr),debugOutputPrefixStr+".next"); if (SHOW_PARSE_PROGRESS) System.out.println("CurrentStation: next");
+			} catch (Exception e) {
+				System.err.printf("Exception while parse CurrentStation: [%s] %s%n", e, e.getMessage());
+				throw e;
+			}
 		}
 	}
 	
@@ -212,39 +261,43 @@ public class OpenWebifTools {
 		public final long aspect;
 		public final boolean isWideScreen;
 		public final long onid;
-		public final long txtpid;
+		public final Long txtpid;
+		public final String txtpidStr;
 		public final long pmtpid;
 		public final long tsid;
 		public final long pcrpid;
 		public final long sid;
-		public final long namespace;
+		public final Long namespace;
+		public final String namespaceStr;
 		public final long apid;
 		public final long vpid;
 		public final boolean result;
 		public final StationID stationID;
 		
 		public StationInfo(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
-			bouquetName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqname"      , debugOutputPrefixStr) ); // "bqname"      : "Sender (DVB-S2)",
-			bouquetRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqref"       , debugOutputPrefixStr) ); // "bqref"       : "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.sender_dvb_s2.tv%22 ORDER BY bouquet",
-			serviceName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "name"        , debugOutputPrefixStr) ); // "name"        : "WELT",
-			serviceRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "ref"         , debugOutputPrefixStr) ); // "ref"         : "1:0:1:445F:453:1:C00000:0:0:0:",
-			provider     = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider"    , debugOutputPrefixStr) ); // "provider"    : "Sonstige Astra",
-			width        =                               JSON_Data.getIntegerValue(object, "width"       , debugOutputPrefixStr);   // "width"       : 720,
-			height       =                               JSON_Data.getIntegerValue(object, "height"      , debugOutputPrefixStr);   // "height"      : 576,
-			aspect       =                               JSON_Data.getIntegerValue(object, "aspect"      , debugOutputPrefixStr);   // "aspect"      : 3,
-			isWideScreen =                               JSON_Data.getBoolValue   (object, "iswidescreen", debugOutputPrefixStr);   // "iswidescreen": true
-			onid         =                               JSON_Data.getIntegerValue(object, "onid"        , debugOutputPrefixStr);   // "onid"        : 1,
-			txtpid       =                               JSON_Data.getIntegerValue(object, "txtpid"      , debugOutputPrefixStr);   // "txtpid"      : 35,
-			pmtpid       =                               JSON_Data.getIntegerValue(object, "pmtpid"      , debugOutputPrefixStr);   // "pmtpid"      : 99,
-			tsid         =                               JSON_Data.getIntegerValue(object, "tsid"        , debugOutputPrefixStr);   // "tsid"        : 1107,
-			pcrpid       =                               JSON_Data.getIntegerValue(object, "pcrpid"      , debugOutputPrefixStr);   // "pcrpid"      : 1023,
-			sid          =                               JSON_Data.getIntegerValue(object, "sid"         , debugOutputPrefixStr);   // "sid"         : 17503,
-			namespace    =                               JSON_Data.getIntegerValue(object, "namespace"   , debugOutputPrefixStr);   // "namespace"   : 12582912,
-			apid         =                               JSON_Data.getIntegerValue(object, "apid"        , debugOutputPrefixStr);   // "apid"        : 1024,
-			vpid         =                               JSON_Data.getIntegerValue(object, "vpid"        , debugOutputPrefixStr);   // "vpid"        : 1023,
-			result       =                               JSON_Data.getBoolValue   (object, "result"      , debugOutputPrefixStr);   // "result"      : true,
+			bouquetName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqname"                , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: bqname"      ); // "bqname"      : "",    "Sender (DVB-S2)",
+			bouquetRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqref"                 , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: bqref"       ); // "bqref"       : "",    "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.sender_dvb_s2.tv%22 ORDER BY bouquet",
+			serviceName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "name"                  , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: name"        ); // "name"        : "",    "WELT",
+			serviceRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "ref"                   , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: ref"         ); // "ref"         : "",    "1:0:1:445F:453:1:C00000:0:0:0:",
+			provider     = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider"              , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: provider"    ); // "provider"    : "",    "Sonstige Astra",
+			width        =                               JSON_Data.getIntegerValue(object, "width"                 , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       : 0,     720,
+			height       =                               JSON_Data.getIntegerValue(object, "height"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      : 0,     576,
+			aspect       =                               JSON_Data.getIntegerValue(object, "aspect"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      : 0,     3,
+			isWideScreen =                               JSON_Data.getBoolValue   (object, "iswidescreen"          , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: iswidescreen"); // "iswidescreen": false  true
+			onid         =                               JSON_Data.getIntegerValue(object, "onid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: onid"        ); // "onid"        : 0,     1,
+			txtpid       =                               JSON_Data.getIntegerValue(object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid I"    ); // "txtpid"      :        35,
+			txtpidStr    =                               JSON_Data.getStringValue (object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid S"    ); // "txtpid"      : "N/A",
+			pmtpid       =                               JSON_Data.getIntegerValue(object, "pmtpid"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      : 0,     99,
+			tsid         =                               JSON_Data.getIntegerValue(object, "tsid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: tsid"        ); // "tsid"        : 0,     1107,
+			pcrpid       =                               JSON_Data.getIntegerValue(object, "pcrpid"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pcrpid"      ); // "pcrpid"      : 0,     1023,
+			sid          =                               JSON_Data.getIntegerValue(object, "sid"                   , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: sid"         ); // "sid"         : 0,     17503,
+			namespace    =                               JSON_Data.getIntegerValue(object, "namespace", false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: namespace I" ); // "namespace"   :        12582912,
+			namespaceStr =                               JSON_Data.getStringValue (object, "namespace", false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: namespace S" ); // "namespace"   : "",
+			apid         =                               JSON_Data.getIntegerValue(object, "apid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: apid"        ); // "apid"        : 0,     1024,
+			vpid         =                               JSON_Data.getIntegerValue(object, "vpid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: vpid"        ); // "vpid"        : 0,     1023,
+			result       =                               JSON_Data.getBoolValue   (object, "result"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: result"      ); // "result"      : false, true,
 			
-			stationID = serviceRef==null ? null : StationID.parseIDStr( removeTrailingStr(serviceRef, ":") );
+			stationID = serviceRef==null || serviceRef.isEmpty() ? null : StationID.parseIDStr( removeTrailingStr(serviceRef, ":") );
 		}
 	}
 
@@ -357,10 +410,16 @@ public class OpenWebifTools {
 		try {
 			return parseIt.parseIt(result);
 		} catch (TraverseException e) {
-			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
+			System.err.printf("TraverseException while parsing JSON structure: %s%n", e.getMessage());
 			writeTaskInfoOnError.accept(System.err);
 			return null;
+		} catch (Exception e) {
+			System.err.printf("Exception while parsing JSON structure: %s%n", e.getMessage());
+			writeTaskInfoOnError.accept(System.err);
+			e.printStackTrace();
+			return null;
 		}
+		
 	}
 
 	static String removeAllTrailingSlashes(String baseURL) {
@@ -375,6 +434,15 @@ public class OpenWebifTools {
 	static String removeTrailingStr(String str, String suffix) {
 		if (str.endsWith(suffix)) str = str.substring(0, str.length()-suffix.length());
 		return str;
+	}
+
+	static String encodeForURL(String message, String taskLabel) {
+		try {
+			return URLEncoder.encode(message, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			System.err.printf("UnsupportedEncodingException while %s: %s%n", taskLabel, e.getMessage());
+		}
+		return message;
 	}
 
 	public static String decodeUnicode(String str) {
