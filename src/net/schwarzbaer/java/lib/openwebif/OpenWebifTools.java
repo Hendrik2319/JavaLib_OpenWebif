@@ -251,27 +251,31 @@ public class OpenWebifTools {
 	}
 	
 	public static class StationInfo {
-		public final String bouquetName;
-		public final String bouquetRef;
-		public final String serviceName;
-		public final String serviceRef;
-		public final String provider;
-		public final long width;
-		public final long height;
-		public final long aspect;
-		public final boolean isWideScreen;
-		public final long onid;
-		public final Long txtpid;
-		public final String txtpidStr;
-		public final long pmtpid;
-		public final long tsid;
-		public final long pcrpid;
-		public final long sid;
-		public final Long namespace;
-		public final String namespaceStr;
-		public final long apid;
-		public final long vpid;
-		public final boolean result;
+		public final String    bouquetName;
+		public final String    bouquetRef;
+		public final String    serviceName;
+		public final String    serviceRef;
+		public final String    provider;
+		public final Long      width;
+		public final String    widthStr;
+		public final Long      height;
+		public final String    heightStr;
+		public final Long      aspect;
+		public final String    aspectStr;
+		public final boolean   isWideScreen;
+		public final long      onid;
+		public final Long      txtpid;
+		public final String    txtpidStr;
+		public final Long      pmtpid;
+		public final String    pmtpidStr;
+		public final long      tsid;
+		public final long      pcrpid;
+		public final long      sid;
+		public final Long      namespace;
+		public final String    namespaceStr;
+		public final long      apid;
+		public final long      vpid;
+		public final boolean   result;
 		public final StationID stationID;
 		
 		public StationInfo(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
@@ -280,14 +284,18 @@ public class OpenWebifTools {
 			serviceName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "name"                  , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: name"        ); // "name"        : "",    "WELT",
 			serviceRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "ref"                   , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: ref"         ); // "ref"         : "",    "1:0:1:445F:453:1:C00000:0:0:0:",
 			provider     = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider"              , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: provider"    ); // "provider"    : "",    "Sonstige Astra",
-			width        =                               JSON_Data.getIntegerValue(object, "width"                 , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       : 0,     720,
-			height       =                               JSON_Data.getIntegerValue(object, "height"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      : 0,     576,
-			aspect       =                               JSON_Data.getIntegerValue(object, "aspect"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      : 0,     3,
-			isWideScreen =                               JSON_Data.getBoolValue   (object, "iswidescreen"          , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: iswidescreen"); // "iswidescreen": false  true
+			width        =                               JSON_Data.getIntegerValue(object, "width"    , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       :        0,     720,
+			widthStr     =                               JSON_Data.getStringValue (object, "width"    , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       : "N/A",
+			height       =                               JSON_Data.getIntegerValue(object, "height"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      :        0,     576,
+			heightStr    =                               JSON_Data.getStringValue (object, "height"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      : "N/A",
+			aspect       =                               JSON_Data.getIntegerValue(object, "aspect"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      :        0,     3,
+			aspectStr    =                               JSON_Data.getStringValue (object, "aspect"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      : "N/A",
+			isWideScreen =                               JSON_Data.getBoolValue   (object, "iswidescreen"          , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: iswidescreen"); // "iswidescreen": false, true,
 			onid         =                               JSON_Data.getIntegerValue(object, "onid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: onid"        ); // "onid"        : 0,     1,
 			txtpid       =                               JSON_Data.getIntegerValue(object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid I"    ); // "txtpid"      :        35,
 			txtpidStr    =                               JSON_Data.getStringValue (object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid S"    ); // "txtpid"      : "N/A",
-			pmtpid       =                               JSON_Data.getIntegerValue(object, "pmtpid"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      : 0,     99,
+			pmtpid       =                               JSON_Data.getIntegerValue(object, "pmtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      :        0,     99,
+			pmtpidStr    =                               JSON_Data.getStringValue (object, "pmtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      : "N/A",
 			tsid         =                               JSON_Data.getIntegerValue(object, "tsid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: tsid"        ); // "tsid"        : 0,     1107,
 			pcrpid       =                               JSON_Data.getIntegerValue(object, "pcrpid"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pcrpid"      ); // "pcrpid"      : 0,     1023,
 			sid          =                               JSON_Data.getIntegerValue(object, "sid"                   , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: sid"         ); // "sid"         : 0,     17503,

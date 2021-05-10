@@ -4,6 +4,7 @@ import java.util.Arrays;
 
 public class StationID implements Comparable<StationID> {
 	
+	// 1:0:1:sid:tsid:onid:namespace:0:0:0:
 	Integer[] numbers;
 	StationID() {
 		numbers = new Integer[10];
