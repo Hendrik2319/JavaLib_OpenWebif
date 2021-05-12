@@ -184,19 +184,19 @@ public class OpenWebifTools {
 	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID, Consumer<String> setIndeterminateProgressTask) {
 		String url = getCurrentEPGeventURL(baseURL, stationID);
 		return getContentForStationAndParseIt(url, "getCurrentEPGevent", baseURL, stationID, result->{
-			CurrentEPGeventResult parseResult = new CurrentEPGeventResult(result);
+			EPGeventListResult parseResult = new EPGeventListResult(result);
 			if (!parseResult.result) return null;
 			return parseResult.events;
 		}, setIndeterminateProgressTask);
 	}
 	
-	private static class CurrentEPGeventResult {
+	public static class EPGeventListResult {
 	
 		public final boolean result;
 		public final Vector<EPGevent> events;
 	
-		public CurrentEPGeventResult(Value<NV, V> value) throws TraverseException { this(value,null); }
-		public CurrentEPGeventResult(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
+		public EPGeventListResult(Value<NV, V> value) throws TraverseException { this(value,null); }
+		public EPGeventListResult(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "CurrentEPGevent";
 			
 			//OptionalValues<NV, V> optVal = new JSON_Helper.OptionalValues<NV,V>();

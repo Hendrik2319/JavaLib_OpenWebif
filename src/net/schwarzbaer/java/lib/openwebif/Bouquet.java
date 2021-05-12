@@ -1,6 +1,7 @@
 package net.schwarzbaer.java.lib.openwebif;
 
 import java.util.Vector;
+import java.util.function.Consumer;
 
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.JSON_Array;
@@ -21,6 +22,24 @@ public class Bouquet {
 		this.subservices = new Vector<>();
 	}
 
+	@Override
+	public String toString() {
+		if (name!=null) return name;
+		if (servicereference!=null) return servicereference;
+		return String.format("Bouquet [%d SubServices]", subservices.size());
+	}
+	
+	public SubService getSubService(int i) {
+		if (i<0 || i>=subservices.size()) return null;
+		return subservices.get(i);
+	}
+	
+	public void forEachStation(Consumer<SubService> action) {
+		for (SubService subservice:subservices)
+			if (!subservice.isMarker())
+				action.accept(subservice);
+	}
+
 	static Bouquet parse(JSON_Object<NV,V> object, BouquetReadInterface bouquetReadInterface) {
 		if (object==null) return null;
 		String servicereference       =                    JSON_Data.getStringValue(object.getValue("servicereference"));
@@ -37,18 +56,6 @@ public class Bouquet {
 		return bouquet;
 	}
 
-	@Override
-	public String toString() {
-		if (name!=null) return name;
-		if (servicereference!=null) return servicereference;
-		return String.format("Bouquet [%d SubServices]", subservices.size());
-	}
-	
-	public SubService getSubService(int i) {
-		if (i<0 || i>=subservices.size()) return null;
-		return subservices.get(i);
-	}
-	
 	public static class SubService {
 
 		public final Service service;
