@@ -9,12 +9,12 @@ import java.util.function.Consumer;
 public class EPG {
 
 	private final Tools tools;
-	private final HashMap<Long,EPGevent> events;
+	private final EventList events;
 	private final HashMap<String,StationEPG> stationEPGs;
 	
 	public EPG(Tools tools) {
 		this.tools = tools;
-		events = new HashMap<>();
+		events = new EventList();
 		stationEPGs = new HashMap<>();
 	}
 	
@@ -46,7 +46,7 @@ public class EPG {
 	}
 	
 	public Vector<EPGevent> getEvents(StationID stationID, long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
-		StationEPG stationEPG = stationEPGs.get(stationID.toIDStr(true));
+		StationEPG stationEPG = getStationEPG(stationID.toIDStr(true), false);
 		if (stationEPG==null) return new Vector<>();
 		return stationEPG.getEvents(events, beginTime_UnixTS, endTime_UnixTS, sorted);
 	}
@@ -59,9 +59,26 @@ public class EPG {
 			
 			if (event.sref==null) continue;
 			
-			StationEPG stationEPG = stationEPGs.get(event.sref);
-			if (stationEPG==null) stationEPGs.put(event.sref,stationEPG = new StationEPG(event.sref));
+			StationEPG stationEPG = getStationEPG(event.sref, true);
 			stationEPG.add(event.id);
+		}
+	}
+
+	private synchronized StationEPG getStationEPG(String sref, boolean addIfNotExists) {
+		StationEPG stationEPG = stationEPGs.get(sref);
+		if (stationEPG==null && addIfNotExists) stationEPGs.put(sref,stationEPG = new StationEPG(sref));
+		return stationEPG;
+	}
+	
+	private static class EventList {
+		private final HashMap<Long,EPGevent> events = new HashMap<>();
+
+		synchronized void put(Long id, EPGevent event) {
+			events.put(id, event);
+		}
+
+		synchronized EPGevent get(long id) {
+			return events.get(id);
 		}
 	}
 	
@@ -75,9 +92,10 @@ public class EPG {
 			eventIDs = new HashSet<>();
 		}
 
-		public Vector<EPGevent> getEvents(HashMap<Long,EPGevent> events, long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
+		public Vector<EPGevent> getEvents(EventList events, long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
 			Vector<EPGevent> result = new Vector<>();
-			for (long eventID:eventIDs) {
+			Vector<Long> ids = getIDs();
+			for (long eventID:ids) {
 				EPGevent event = events.get(eventID);
 				if (!sref.equals(event.sref)) continue;
 				
@@ -95,7 +113,11 @@ public class EPG {
 			return result;
 		}
 
-		public void add(long eventID) {
+		private synchronized Vector<Long> getIDs() {
+			return new Vector<>(eventIDs);
+		}
+
+		public synchronized void add(long eventID) {
 			eventIDs.add(eventID);
 		}
 		
