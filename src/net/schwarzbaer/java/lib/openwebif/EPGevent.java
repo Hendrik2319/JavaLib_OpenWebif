@@ -45,27 +45,27 @@ public class EPGevent {
 
 	public EPGevent(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
 		Object id_null;
-		station_name    = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "sname"                 , debugOutputPrefixStr) ); // "sname"          : "ZDF HD",                           
-		title           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "title"                 , debugOutputPrefixStr) ); // "title"          : "Bares f\u00fcr Rares",             
-		shortdesc       = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "shortdesc"             , debugOutputPrefixStr) ); // "shortdesc"      : "Die Tr\u00f6del-Show mit Horst ... 
-		longdesc        = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "longdesc"              , debugOutputPrefixStr) ); // "longdesc"       : "Tr\u00f6del-Show, Deutschland 20...
-		genre           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "genre"                 , debugOutputPrefixStr) ); // "genre"          : "Show Games show: Show/Spielshow (al...
-		genreid         =                               JSON_Data.getIntegerValue(object, "genreid"               , debugOutputPrefixStr);   // "genreid"        : 48,                               
-		date            =                               JSON_Data.getStringValue (object, "date"     , true, false, debugOutputPrefixStr);   // "date"           : "Mi 12.05.2021",                                                              
-		begin           =                               JSON_Data.getStringValue (object, "begin"    , true, false, debugOutputPrefixStr);   // "begin"          : "15:05",                                                                      
-		end             =                               JSON_Data.getStringValue (object, "end"      , true, false, debugOutputPrefixStr);   // "end"            : "16:00",                                                                      
-		begin_timestamp =                               JSON_Data.getIntegerValue(object, "begin_timestamp"       , debugOutputPrefixStr);   // "begin_timestamp": 1620824700,               
-		now_timestamp   =                               JSON_Data.getIntegerValue(object, "now_timestamp"         , debugOutputPrefixStr);   // "now_timestamp"  : 1620830628,                 
-		duration        =                               JSON_Data.getIntegerValue(object, "duration" , true, false, debugOutputPrefixStr);   // "duration"       : 55,                                                                           
-		duration_sec    =                               JSON_Data.getIntegerValue(object, "duration_sec"          , debugOutputPrefixStr);   // "duration_sec"   : 3300,                        
-		remaining       =                               JSON_Data.getIntegerValue(object, "remaining", true, false, debugOutputPrefixStr);   //                                              
-		progress        =                               JSON_Data.getIntegerValue(object, "progress" , true, false, debugOutputPrefixStr);   // "progress"       : 716,                                                                          
-		tleft           =                               JSON_Data.getIntegerValue(object, "tleft"    , true, false, debugOutputPrefixStr);   // "tleft"          : -44,                                                                          
-		provider        = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider" , true, false, debugOutputPrefixStr) ); //                                              
-		picon           =                               JSON_Data.getStringValue (object, "picon"    , true, false, debugOutputPrefixStr);   // "picon"          : "/picon/1_0_19_2B66_3F3_1_C00000_0_0_0.png",                                  
-		sref            =                               JSON_Data.getStringValue (object, "sref"                  , debugOutputPrefixStr);   // "sref"           : "1:0:19:2B66:3F3:1:C00000:0:0:0:",   
-		id              =                               JSON_Data.getIntegerValue(object, "id"       , false, true, debugOutputPrefixStr);   // "id"             : 23528                                  
-		id_null         =                               JSON_Data.getNullValue   (object, "id"       , false, true, debugOutputPrefixStr);   // "id"             : null
+		station_name    = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "sname"                 , debugOutputPrefixStr) ); // "sname"          : "ZDF HD",                           
+		title           = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "title"                 , debugOutputPrefixStr) ); // "title"          : "Bares f\u00fcr Rares",             
+		shortdesc       = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "shortdesc"             , debugOutputPrefixStr) ); // "shortdesc"      : "Die Tr\u00f6del-Show mit Horst ... 
+		longdesc        = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "longdesc"              , debugOutputPrefixStr) ); // "longdesc"       : "Tr\u00f6del-Show, Deutschland 20...
+		genre           = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "genre"                 , debugOutputPrefixStr) ); // "genre"          : "Show Games show: Show/Spielshow (al...
+		genreid         =                                      JSON_Data.getIntegerValue(object, "genreid"               , debugOutputPrefixStr);   // "genreid"        : 48,                               
+		date            =                                      JSON_Data.getStringValue (object, "date"     , true, false, debugOutputPrefixStr);   // "date"           : "Mi 12.05.2021",                                                              
+		begin           =                                      JSON_Data.getStringValue (object, "begin"    , true, false, debugOutputPrefixStr);   // "begin"          : "15:05",                                                                      
+		end             =                                      JSON_Data.getStringValue (object, "end"      , true, false, debugOutputPrefixStr);   // "end"            : "16:00",                                                                      
+		begin_timestamp =                                      JSON_Data.getIntegerValue(object, "begin_timestamp"       , debugOutputPrefixStr);   // "begin_timestamp": 1620824700,               
+		now_timestamp   =                                      JSON_Data.getIntegerValue(object, "now_timestamp"         , debugOutputPrefixStr);   // "now_timestamp"  : 1620830628,                 
+		duration        =                                      JSON_Data.getIntegerValue(object, "duration" , true, false, debugOutputPrefixStr);   // "duration"       : 55,                                                                           
+		duration_sec    =                                      JSON_Data.getIntegerValue(object, "duration_sec"          , debugOutputPrefixStr);   // "duration_sec"   : 3300,                        
+		remaining       =                                      JSON_Data.getIntegerValue(object, "remaining", true, false, debugOutputPrefixStr);   //                                              
+		progress        =                                      JSON_Data.getIntegerValue(object, "progress" , true, false, debugOutputPrefixStr);   // "progress"       : 716,                                                                          
+		tleft           =                                      JSON_Data.getIntegerValue(object, "tleft"    , true, false, debugOutputPrefixStr);   // "tleft"          : -44,                                                                          
+		provider        = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "provider" , true, false, debugOutputPrefixStr) ); //                                              
+		picon           =                                      JSON_Data.getStringValue (object, "picon"    , true, false, debugOutputPrefixStr);   // "picon"          : "/picon/1_0_19_2B66_3F3_1_C00000_0_0_0.png",                                  
+		sref            =                                      JSON_Data.getStringValue (object, "sref"                  , debugOutputPrefixStr);   // "sref"           : "1:0:19:2B66:3F3:1:C00000:0:0:0:",   
+		id              =                                      JSON_Data.getIntegerValue(object, "id"       , false, true, debugOutputPrefixStr);   // "id"             : 23528                                  
+		id_null         =                                      JSON_Data.getNullValue   (object, "id"       , false, true, debugOutputPrefixStr);   // "id"             : null
 		
 		if (id==null && id_null==null)
 			throw new TraverseException("%s.id isn't either an IntegerValue or a NullValue", debugOutputPrefixStr);

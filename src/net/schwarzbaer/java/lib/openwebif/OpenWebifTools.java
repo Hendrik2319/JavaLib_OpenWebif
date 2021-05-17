@@ -453,6 +453,15 @@ public class OpenWebifTools {
 		return message;
 	}
 
+	public static String decodeUnicodeAndHTML(String str) {
+		return decodeHTML(decodeUnicode(str));
+	}
+
+	public static String decodeHTML(String str) {
+		if (str==null) return null;
+		return str.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
+	}
+
 	public static String decodeUnicode(String str) {
 		if (str==null) return null;
 		int pos;
