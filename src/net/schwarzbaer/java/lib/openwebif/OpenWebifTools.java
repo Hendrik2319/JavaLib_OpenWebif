@@ -458,8 +458,8 @@ public class OpenWebifTools {
 	}
 
 	public static String decodeHTML(String str) {
-		if (str==null) return null;
-		return str.replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
+		if (str==null) return null; // &quot;
+		return str.replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
 	}
 
 	public static String decodeUnicode(String str) {
