@@ -21,6 +21,10 @@ public class EPG {
 		String getTimeStr(long millis);
 	}
 	
+	public boolean isEmpty() {
+		return stationEPGs.isEmpty();
+	}
+
 	public void readEPGforService(String baseURL, StationID stationID, Long beginTime_UnixTS, Long endTime_UnixTS, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
