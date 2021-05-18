@@ -20,7 +20,7 @@ public class EPGevent {
 	public final String end;
 	public final long   begin_timestamp;
 	public final long   now_timestamp;
-	public final Long   duration;
+	public final Long   duration_min;
 	public final long   duration_sec;
 	public final Long   remaining;
 	public final Long   progress;
@@ -29,6 +29,7 @@ public class EPGevent {
 	public final String picon;
 	public final String sref;
 	public final Long   id;
+	public boolean isUpToDate;
 	
 	static               EPGevent parse(Value<NV, V> value                                    ) throws TraverseException { return parse(value,null,EPGevent::new); }
 	static <T extends EPGevent> T parse(Value<NV, V> value, EPGeventConstructor<T> constructor) throws TraverseException { return parse(value,null,constructor); }
@@ -43,8 +44,33 @@ public class EPGevent {
 		T create(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException;
 	}
 
+	public EPGevent(EPGevent other) {
+		this.station_name    = other.station_name;    
+		this.title           = other.title;           
+		this.shortdesc       = other.shortdesc;       
+		this.longdesc        = other.longdesc;        
+		this.genre           = other.genre;           
+		this.genreid         = other.genreid;         
+		this.date            = other.date;            
+		this.begin           = other.begin;           
+		this.end             = other.end;             
+		this.begin_timestamp = other.begin_timestamp; 
+		this.now_timestamp   = other.now_timestamp;   
+		this.duration_min    = other.duration_min;    
+		this.duration_sec    = other.duration_sec;    
+		this.remaining       = other.remaining;       
+		this.progress        = other.progress;        
+		this.tleft           = other.tleft;           
+		this.provider        = other.provider;        
+		this.picon           = other.picon;           
+		this.sref            = other.sref;            
+		this.id              = other.id;              
+		this.isUpToDate      = other.isUpToDate;              
+	}
+	
 	public EPGevent(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
 		Object id_null;
+		isUpToDate      = true;
 		station_name    = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "sname"                 , debugOutputPrefixStr) ); // "sname"          : "ZDF HD",                           
 		title           = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "title"                 , debugOutputPrefixStr) ); // "title"          : "Bares f\u00fcr Rares",             
 		shortdesc       = OpenWebifTools.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "shortdesc"             , debugOutputPrefixStr) ); // "shortdesc"      : "Die Tr\u00f6del-Show mit Horst ... 
@@ -56,7 +82,7 @@ public class EPGevent {
 		end             =                                      JSON_Data.getStringValue (object, "end"      , true, false, debugOutputPrefixStr);   // "end"            : "16:00",                                                                      
 		begin_timestamp =                                      JSON_Data.getIntegerValue(object, "begin_timestamp"       , debugOutputPrefixStr);   // "begin_timestamp": 1620824700,               
 		now_timestamp   =                                      JSON_Data.getIntegerValue(object, "now_timestamp"         , debugOutputPrefixStr);   // "now_timestamp"  : 1620830628,                 
-		duration        =                                      JSON_Data.getIntegerValue(object, "duration" , true, false, debugOutputPrefixStr);   // "duration"       : 55,                                                                           
+		duration_min        =                                      JSON_Data.getIntegerValue(object, "duration" , true, false, debugOutputPrefixStr);   // "duration"       : 55,                                                                           
 		duration_sec    =                                      JSON_Data.getIntegerValue(object, "duration_sec"          , debugOutputPrefixStr);   // "duration_sec"   : 3300,                        
 		remaining       =                                      JSON_Data.getIntegerValue(object, "remaining", true, false, debugOutputPrefixStr);   //                                              
 		progress        =                                      JSON_Data.getIntegerValue(object, "progress" , true, false, debugOutputPrefixStr);   // "progress"       : 716,                                                                          

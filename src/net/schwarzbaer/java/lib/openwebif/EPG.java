@@ -2,19 +2,18 @@ package net.schwarzbaer.java.lib.openwebif;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Vector;
 import java.util.function.Consumer;
 
 public class EPG {
 
 	private final Tools tools;
-	private final EventList events;
+	//private final EventList events;
 	private final HashMap<String,StationEPG> stationEPGs;
 	
 	public EPG(Tools tools) {
 		this.tools = tools;
-		events = new EventList();
+		//events = new EventList();
 		stationEPGs = new HashMap<>();
 	}
 	
@@ -42,26 +41,29 @@ public class EPG {
 			return parseResult.events;
 		}, setIndeterminateProgressTask);
 		
-		addAll(events);
+		addAll(stationID, events);
 	}
 	
 	public Vector<EPGevent> getEvents(StationID stationID, long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
 		StationEPG stationEPG = getStationEPG(stationID.toIDStr(true), false);
 		if (stationEPG==null) return new Vector<>();
-		return stationEPG.getEvents(events, beginTime_UnixTS, endTime_UnixTS, sorted);
+		return stationEPG.getEvents(beginTime_UnixTS, endTime_UnixTS, sorted);
 	}
 
-	private void addAll(Vector<EPGevent> events) {
-		for (EPGevent event:events) {
-			if (event.id==null) continue;
-			
-			this.events.put(event.id, event);
-			
-			if (event.sref==null) continue;
-			
-			StationEPG stationEPG = getStationEPG(event.sref, true);
-			stationEPG.add(event.id);
-		}
+	private void addAll(StationID stationID, Vector<EPGevent> events) {
+		StationEPG stationEPG = getStationEPG(stationID.toIDStr(true), true);
+		stationEPG.add(events);
+		
+		//for (EPGevent event:events) {
+		//	if (event.id==null) continue;
+		//	
+		//	this.events.put(event.id, event);
+		//	
+		//	if (event.sref==null) continue;
+		//	
+		//	StationEPG stationEPG = getStationEPG(event.sref, true);
+		//	stationEPG.add(event.id);
+		//}
 	}
 
 	private synchronized StationEPG getStationEPG(String sref, boolean addIfNotExists) {
@@ -70,35 +72,31 @@ public class EPG {
 		return stationEPG;
 	}
 	
-	private static class EventList {
-		private final HashMap<Long,EPGevent> events = new HashMap<>();
-
-		synchronized void put(Long id, EPGevent event) {
-			events.put(id, event);
-		}
-
-		synchronized EPGevent get(long id) {
-			return events.get(id);
-		}
-	}
+	//private static class EventList {
+	//	private final HashMap<Long,EPGevent> events = new HashMap<>();
+	//
+	//	synchronized void put(Long id, EPGevent event) {
+	//		events.put(id, event);
+	//	}
+	//
+	//	synchronized EPGevent get(long id) {
+	//		return events.get(id);
+	//	}
+	//}
 	
 	public static class StationEPG {
 
 		private final String sref;
-		private final HashSet<Long> eventIDs;
+		private final HashMap<Long,EPGevent> events;
 
 		public StationEPG(String sref) {
 			this.sref = sref;
-			eventIDs = new HashSet<>();
+			events = new HashMap<>();
 		}
 
-		public Vector<EPGevent> getEvents(EventList events, long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
+		public synchronized Vector<EPGevent> getEvents(long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
 			Vector<EPGevent> result = new Vector<>();
-			Vector<Long> ids = getIDs();
-			for (long eventID:ids) {
-				EPGevent event = events.get(eventID);
-				if (!sref.equals(event.sref)) continue;
-				
+			for (EPGevent event:events.values()) {
 				long eventBegin = event.begin_timestamp;
 				long eventDuration = event.duration_sec;
 				if ( eventBegin+eventDuration < beginTime_UnixTS || endTime_UnixTS < eventBegin )
@@ -113,12 +111,21 @@ public class EPG {
 			return result;
 		}
 
-		private synchronized Vector<Long> getIDs() {
-			return new Vector<>(eventIDs);
-		}
-
-		public synchronized void add(long eventID) {
-			eventIDs.add(eventID);
+		public synchronized void add(Vector<EPGevent> events) {
+			for (EPGevent oldEvent:this.events.values())
+				oldEvent.isUpToDate = false;
+			
+			for (EPGevent event:events) {
+				if (!sref.equals(event.sref)) {
+					System.out.printf("Found Wrong EPGevent: Station.SRef=\"%s\", EPGevent.SRef=\"%s\"%n", sref, event.sref);
+					continue;
+				}
+				if (event.id==null) {
+					System.out.printf("Found Wrong EPGevent: EPGevent.ID = <null>%n");
+					continue;
+				}
+				this.events.put(event.id, new EPGevent(event));
+			}
 		}
 		
 	}
