@@ -68,9 +68,9 @@ public class Volume {
 			// message	"Volume changed"
 			// ismute	false
 			
-			ismute  =                               JSON_Data.getBoolValue   (object, "ismute" , debugOutputPrefixStr);
-			current =                               JSON_Data.getIntegerValue(object, "current", debugOutputPrefixStr);
-			message = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "message", debugOutputPrefixStr) );
+			ismute  =                          JSON_Data.getBoolValue   (object, "ismute" , debugOutputPrefixStr);
+			current =                          JSON_Data.getIntegerValue(object, "current", debugOutputPrefixStr);
+			message = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "message", debugOutputPrefixStr) );
 		}
 		
 	}

@@ -2,6 +2,8 @@ package net.schwarzbaer.java.lib.openwebif;
 
 import java.util.function.Supplier;
 
+import net.schwarzbaer.java.lib.jsonparser.JSON_Data;
+
 public class Service {
 	
 	public String label;
@@ -32,7 +34,7 @@ public class Service {
 					return null;
 				}
 			} else if (i==11) {
-				service.label = OpenWebifTools.decodeUnicode(strs[i]);
+				service.label = JSON_Data.decodeUnicode(strs[i]);
 			}
 		}
 		return service;

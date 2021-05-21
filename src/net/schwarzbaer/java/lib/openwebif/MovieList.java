@@ -36,14 +36,14 @@ public class MovieList {
 		String debugOutputPrefixStr = "MovieList";
 		JSON_Object<NV, V> object = JSON_Data.getObjectValue(result, debugOutputPrefixStr);
 		
-		directory = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue(object, "directory", debugOutputPrefixStr) );
+		directory = JSON_Data.decodeUnicode( JSON_Data.getStringValue(object, "directory", debugOutputPrefixStr) );
 		JSON_Array<NV, V> bookmarks = JSON_Data.getArrayValue(object, "bookmarks", debugOutputPrefixStr);
 		JSON_Array<NV, V> movies    = JSON_Data.getArrayValue(object, "movies", debugOutputPrefixStr);
 		
 		this.bookmarks = new Vector<>();
 		for (int i=0; i<bookmarks.size(); i++) {
 			String str = JSON_Data.getStringValue(bookmarks.get(i), debugOutputPrefixStr+".bookmarks["+i+"]");
-			this.bookmarks.add( OpenWebifTools.decodeUnicode( str ) );
+			this.bookmarks.add( JSON_Data.decodeUnicode( str ) );
 		}
 		
 		this.movies = new Vector<>();
@@ -101,21 +101,21 @@ public class MovieList {
 		public Movie(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
 			
-			begintime           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "begintime"          , debugOutputPrefixStr) ); 
-			description         = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "description"        , debugOutputPrefixStr) );
-			descriptionExtended = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "descriptionExtended", debugOutputPrefixStr) );
-			eventname           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "eventname"          , debugOutputPrefixStr) );
-			filename            = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "filename"           , debugOutputPrefixStr) );
-			filename_stripped   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "filename_stripped"  , debugOutputPrefixStr) );
-			filesize            =                               JSON_Data.getIntegerValue(object, "filesize"           , debugOutputPrefixStr)  ;
-			filesize_readable   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "filesize_readable"  , debugOutputPrefixStr) );
-			fullname            = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "fullname"           , debugOutputPrefixStr) );
-			lastseen            =                               JSON_Data.getIntegerValue(object, "lastseen"           , debugOutputPrefixStr)  ;
-			lengthStr           = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "length"             , debugOutputPrefixStr) );
-			recordingtime       =                               JSON_Data.getIntegerValue(object, "recordingtime"      , debugOutputPrefixStr)  ;
-			servicename         = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "servicename"        , debugOutputPrefixStr) );
-			serviceref          = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "serviceref"         , debugOutputPrefixStr) );
-			tags                = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "tags"               , debugOutputPrefixStr) );
+			begintime           = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "begintime"          , debugOutputPrefixStr) ); 
+			description         = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "description"        , debugOutputPrefixStr) );
+			descriptionExtended = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "descriptionExtended", debugOutputPrefixStr) );
+			eventname           = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "eventname"          , debugOutputPrefixStr) );
+			filename            = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "filename"           , debugOutputPrefixStr) );
+			filename_stripped   = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "filename_stripped"  , debugOutputPrefixStr) );
+			filesize            =                          JSON_Data.getIntegerValue(object, "filesize"           , debugOutputPrefixStr)  ;
+			filesize_readable   = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "filesize_readable"  , debugOutputPrefixStr) );
+			fullname            = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "fullname"           , debugOutputPrefixStr) );
+			lastseen            =                          JSON_Data.getIntegerValue(object, "lastseen"           , debugOutputPrefixStr)  ;
+			lengthStr           = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "length"             , debugOutputPrefixStr) );
+			recordingtime       =                          JSON_Data.getIntegerValue(object, "recordingtime"      , debugOutputPrefixStr)  ;
+			servicename         = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "servicename"        , debugOutputPrefixStr) );
+			serviceref          = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "serviceref"         , debugOutputPrefixStr) );
+			tags                = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "tags"               , debugOutputPrefixStr) );
 			
 			length_s = parseLength(lengthStr);
 		}

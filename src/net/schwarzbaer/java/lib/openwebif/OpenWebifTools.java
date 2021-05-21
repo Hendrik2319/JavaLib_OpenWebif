@@ -169,8 +169,8 @@ public class OpenWebifTools {
 			service = JSON_Data.getObjectValue(object, "service", debugOutputPrefixStr);
 			
 			debugOutputPrefixStr += ".service";
-			sRef       = decodeUnicode( JSON_Data.getStringValue(service, "servicereference", debugOutputPrefixStr) );
-			isplayable =                JSON_Data.getBoolValue  (service, "isplayable"      , debugOutputPrefixStr);
+			sRef       = JSON_Data.decodeUnicode( JSON_Data.getStringValue(service, "servicereference", debugOutputPrefixStr) );
+			isplayable =                          JSON_Data.getBoolValue  (service, "isplayable"      , debugOutputPrefixStr);
 		}
 		
 	}
@@ -279,34 +279,45 @@ public class OpenWebifTools {
 		public final StationID stationID;
 		
 		public StationInfo(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
-			bouquetName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqname"                , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: bqname"      ); // "bqname"      : "",    "Sender (DVB-S2)",
-			bouquetRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "bqref"                 , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: bqref"       ); // "bqref"       : "",    "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.sender_dvb_s2.tv%22 ORDER BY bouquet",
-			serviceName  = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "name"                  , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: name"        ); // "name"        : "",    "WELT",
-			serviceRef   = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "ref"                   , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: ref"         ); // "ref"         : "",    "1:0:1:445F:453:1:C00000:0:0:0:",
-			provider     = OpenWebifTools.decodeUnicode( JSON_Data.getStringValue (object, "provider"              , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: provider"    ); // "provider"    : "",    "Sonstige Astra",
-			width        =                               JSON_Data.getIntegerValue(object, "width"    , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       :        0,     720,
-			widthStr     =                               JSON_Data.getStringValue (object, "width"    , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       : "N/A",
-			height       =                               JSON_Data.getIntegerValue(object, "height"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      :        0,     576,
-			heightStr    =                               JSON_Data.getStringValue (object, "height"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      : "N/A",
-			aspect       =                               JSON_Data.getIntegerValue(object, "aspect"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      :        0,     3,
-			aspectStr    =                               JSON_Data.getStringValue (object, "aspect"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      : "N/A",
-			isWideScreen =                               JSON_Data.getBoolValue   (object, "iswidescreen"          , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: iswidescreen"); // "iswidescreen": false, true,
-			onid         =                               JSON_Data.getIntegerValue(object, "onid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: onid"        ); // "onid"        : 0,     1,
-			txtpid       =                               JSON_Data.getIntegerValue(object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid I"    ); // "txtpid"      :        35,
-			txtpidStr    =                               JSON_Data.getStringValue (object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid S"    ); // "txtpid"      : "N/A",
-			pmtpid       =                               JSON_Data.getIntegerValue(object, "pmtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      :        0,     99,
-			pmtpidStr    =                               JSON_Data.getStringValue (object, "pmtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      : "N/A",
-			tsid         =                               JSON_Data.getIntegerValue(object, "tsid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: tsid"        ); // "tsid"        : 0,     1107,
-			pcrpid       =                               JSON_Data.getIntegerValue(object, "pcrpid"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pcrpid"      ); // "pcrpid"      : 0,     1023,
-			sid          =                               JSON_Data.getIntegerValue(object, "sid"                   , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: sid"         ); // "sid"         : 0,     17503,
-			namespace    =                               JSON_Data.getIntegerValue(object, "namespace", false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: namespace I" ); // "namespace"   :        12582912,
-			namespaceStr =                               JSON_Data.getStringValue (object, "namespace", false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: namespace S" ); // "namespace"   : "",
-			apid         =                               JSON_Data.getIntegerValue(object, "apid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: apid"        ); // "apid"        : 0,     1024,
-			vpid         =                               JSON_Data.getIntegerValue(object, "vpid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: vpid"        ); // "vpid"        : 0,     1023,
-			result       =                               JSON_Data.getBoolValue   (object, "result"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: result"      ); // "result"      : false, true,
+			bouquetName  = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "bqname"                , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: bqname"      ); // "bqname"      : "",    "Sender (DVB-S2)",
+			bouquetRef   = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "bqref"                 , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: bqref"       ); // "bqref"       : "",    "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.sender_dvb_s2.tv%22 ORDER BY bouquet",
+			serviceName  = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "name"                  , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: name"        ); // "name"        : "",    "WELT",
+			serviceRef   = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "ref"                   , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: ref"         ); // "ref"         : "",    "1:0:1:445F:453:1:C00000:0:0:0:",
+			provider     = JSON_Data.decodeUnicode( JSON_Data.getStringValue (object, "provider"              , debugOutputPrefixStr) );  if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: provider"    ); // "provider"    : "",    "Sonstige Astra",
+			width        =                          JSON_Data.getIntegerValue(object, "width"    , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       :        0,     720,
+			widthStr     =                          JSON_Data.getStringValue (object, "width"    , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: width"       ); // "width"       : "N/A",
+			height       =                          JSON_Data.getIntegerValue(object, "height"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      :        0,     576,
+			heightStr    =                          JSON_Data.getStringValue (object, "height"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: height"      ); // "height"      : "N/A",
+			aspect       =                          JSON_Data.getIntegerValue(object, "aspect"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      :        0,     3,
+			aspectStr    =                          JSON_Data.getStringValue (object, "aspect"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: aspect"      ); // "aspect"      : "N/A",
+			isWideScreen =                          JSON_Data.getBoolValue   (object, "iswidescreen"          , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: iswidescreen"); // "iswidescreen": false, true,
+			onid         =                          JSON_Data.getIntegerValue(object, "onid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: onid"        ); // "onid"        : 0,     1,
+			txtpid       =                          JSON_Data.getIntegerValue(object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid I"    ); // "txtpid"      :        35,
+			txtpidStr    =                          JSON_Data.getStringValue (object, "txtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: txtpid S"    ); // "txtpid"      : "N/A",
+			pmtpid       =                          JSON_Data.getIntegerValue(object, "pmtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      :        0,     99,
+			pmtpidStr    =                          JSON_Data.getStringValue (object, "pmtpid"   , false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pmtpid"      ); // "pmtpid"      : "N/A",
+			tsid         =                          JSON_Data.getIntegerValue(object, "tsid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: tsid"        ); // "tsid"        : 0,     1107,
+			pcrpid       =                          JSON_Data.getIntegerValue(object, "pcrpid"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: pcrpid"      ); // "pcrpid"      : 0,     1023,
+			sid          =                          JSON_Data.getIntegerValue(object, "sid"                   , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: sid"         ); // "sid"         : 0,     17503,
+			namespace    =                          JSON_Data.getIntegerValue(object, "namespace", false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: namespace I" ); // "namespace"   :        12582912,
+			namespaceStr =                          JSON_Data.getStringValue (object, "namespace", false, true, debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: namespace S" ); // "namespace"   : "",
+			apid         =                          JSON_Data.getIntegerValue(object, "apid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: apid"        ); // "apid"        : 0,     1024,
+			vpid         =                          JSON_Data.getIntegerValue(object, "vpid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: vpid"        ); // "vpid"        : 0,     1023,
+			result       =                          JSON_Data.getBoolValue   (object, "result"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: result"      ); // "result"      : false, true,
 			
 			stationID = serviceRef==null || serviceRef.isEmpty() ? null : StationID.parseIDStr( removeTrailingStr(serviceRef, ":") );
 		}
+	}
+
+	public static Timers readTimers(String baseURL, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		baseURL = removeAllTrailingSlashes(baseURL);
+		String url = baseURL+"/api/timerlist";
+		
+		return getContentAndParseIt(url, err->{
+			err.printf("   readTimers(url)%n");
+			err.printf("      url: \"%s\"%n", url);
+		}, Timers::new, setIndeterminateProgressTask);
 	}
 
 	public interface BouquetReadInterface {
@@ -451,32 +462,6 @@ public class OpenWebifTools {
 			System.err.printf("UnsupportedEncodingException while %s: %s%n", taskLabel, e.getMessage());
 		}
 		return message;
-	}
-
-	public static String decodeUnicodeAndHTML(String str) {
-		return decodeHTML(decodeUnicode(str));
-	}
-
-	public static String decodeHTML(String str) {
-		if (str==null) return null; // &quot;
-		return str.replace("&quot;", "\"").replace("&lt;", "<").replace("&gt;", ">").replace("&amp;", "&");
-	}
-
-	public static String decodeUnicode(String str) {
-		if (str==null) return null;
-		int pos;
-		int startPos = 0;
-		while ( (pos=str.indexOf("\\u",startPos))>=0 ) {
-			if (str.length()<pos+6) break;
-			String prefix = str.substring(0, pos);
-			String suffix = str.substring(pos+6);
-			String codeStr = str.substring(pos+2,pos+6);
-			int code;
-			try { code = Integer.parseUnsignedInt(codeStr,16); }
-			catch (NumberFormatException e) { startPos = pos+2; continue; }
-			str = prefix + ((char)code) + suffix;
-		}
-		return str;
 	}
 
 	static String getContent(String urlStr) {
