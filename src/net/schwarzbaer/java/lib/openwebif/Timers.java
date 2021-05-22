@@ -13,9 +13,9 @@ import net.schwarzbaer.java.lib.openwebif.OpenWebifTools.V;
 
 public class Timers {
 	
-	final boolean result;
-	final Vector<Timer> timers;
-	final Vector<String> locations;
+	public final boolean result;
+	public final Vector<Timer> timers;
+	public final Vector<String> locations;
 	
 	Timers(Value<NV, V> value) throws TraverseException { this(value,null); }
 	Timers(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
@@ -107,7 +107,7 @@ public class Timers {
 	        duration            =                                 JSON_Data.getIntegerValue (object, "duration"                   , debugOutputPrefixStr);   // Integer
 	        eit                 =                                 JSON_Data.getIntegerValue (object, "eit"                        , debugOutputPrefixStr);   // Integer
 	        end                 =                                 JSON_Data.getIntegerValue (object, "end"                        , debugOutputPrefixStr);   // Integer
-	        filename            =                                 JSON_Data.getStringValue  (object, "filename"      , false, true, debugOutputPrefixStr);   // [String, Null]
+	        filename            = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "filename"      , false, true, debugOutputPrefixStr) ); // [String, Null]
 			filenameNull        =                                 JSON_Data.getNullValue    (object, "filename"      , false, true, debugOutputPrefixStr);   // [String, Null]
 	        firsttryprepare     =                                 JSON_Data.getIntegerValue (object, "firsttryprepare"            , debugOutputPrefixStr);   // Integer
 	        isAutoTimer         =                                 JSON_Data.getIntegerValue (object, "isAutoTimer"                , debugOutputPrefixStr);   // Integer
