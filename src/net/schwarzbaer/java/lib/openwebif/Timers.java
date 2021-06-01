@@ -136,6 +136,12 @@ public class Timers {
 				logentries.add(new LogEntry(logentriesRaw.get(i), debugOutputPrefixStr+".logentries["+i+"]"));
 		}
 		
+		public boolean isDisabled() {
+			return disabled==1;
+		}
+		public boolean isRecording() {
+			return justplay==0;
+		}
 	}
 	
 	public static class LogEntry {

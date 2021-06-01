@@ -48,7 +48,7 @@ public class EPG {
 		addAll(stationID, events);
 	}
 	
-	public Vector<EPGevent> getEvents(StationID stationID, long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
+	public Vector<EPGevent> getEvents(StationID stationID, long beginTime_UnixTS, Long endTime_UnixTS, boolean sorted) {
 		StationEPG stationEPG = getStationEPG(stationID.toIDStr(true), false);
 		if (stationEPG==null) return new Vector<>();
 		return stationEPG.getEvents(beginTime_UnixTS, endTime_UnixTS, sorted);
@@ -98,12 +98,12 @@ public class EPG {
 			events = new HashMap<>();
 		}
 
-		public synchronized Vector<EPGevent> getEvents(long beginTime_UnixTS, long endTime_UnixTS, boolean sorted) {
+		public synchronized Vector<EPGevent> getEvents(long beginTime_UnixTS, Long endTime_UnixTS, boolean sorted) {
 			Vector<EPGevent> result = new Vector<>();
 			for (EPGevent event:events.values()) {
 				long eventBegin = event.begin_timestamp;
 				long eventDuration = event.duration_sec;
-				if ( eventBegin+eventDuration < beginTime_UnixTS || endTime_UnixTS < eventBegin )
+				if ( eventBegin+eventDuration < beginTime_UnixTS || (endTime_UnixTS!=null && endTime_UnixTS.longValue() < eventBegin) )
 					continue;
 				
 				result.add(event);
