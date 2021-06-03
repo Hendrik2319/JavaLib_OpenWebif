@@ -1,6 +1,7 @@
 package net.schwarzbaer.java.lib.openwebif;
 
 import java.util.Vector;
+import java.util.function.Consumer;
 
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.JSON_Array;
@@ -41,6 +42,36 @@ public class Timers {
 		locations = new Vector<>();
 		for (int i=0; i<locationsRaw.size(); i++)
 			locations.add(JSON_Data.getStringValue(locationsRaw.get(i), debugOutputPrefixStr+".locations["+i+"]"));
+	}
+	
+	public enum TimerType { Record, RecordAndZap, ZapOnly }
+	
+	public static OpenWebifTools.MessageResponse addTimer(String baseURL, String sRef, int eventid, TimerType type, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		
+		String extraParameter = "";
+		if (type!=null)
+			switch (type) {
+			case Record      : extraParameter = ""; break;
+			case ZapOnly     : extraParameter = "&justplay=1"; break;
+			case RecordAndZap: extraParameter = "&always_zap=1"; break;
+			}
+		
+		String url = String.format("%s/api/timeraddbyeventid?sRef=%s&eventid=%d%s", baseURL, sRef, eventid, extraParameter);
+		
+		String baseURLStr = baseURL;
+		return OpenWebifTools.getContentAndParseIt(url, err->{
+				err.printf("   addTimer(baseURL, sRef, eventid, type)%n");
+				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+				err.printf("      sRef   : \"%s\"%n", sRef);
+				err.printf("      eventid: %d%n", eventid);
+				err.printf("      type   : %s%n", type);
+				err.printf("      -> url : \"%s\"%n", url);
+			},
+			OpenWebifTools.MessageResponse::new,
+			setIndeterminateProgressTask
+		);
 	}
 	
 	public static class Timer {
