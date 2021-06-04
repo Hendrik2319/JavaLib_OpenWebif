@@ -9,7 +9,6 @@ import net.schwarzbaer.java.lib.jsonparser.JSON_Data.JSON_Object;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.Null;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.TraverseException;
 import net.schwarzbaer.java.lib.jsonparser.JSON_Data.Value;
-import net.schwarzbaer.java.lib.openwebif.OpenWebifTools.MessageResponse;
 import net.schwarzbaer.java.lib.openwebif.OpenWebifTools.NV;
 import net.schwarzbaer.java.lib.openwebif.OpenWebifTools.V;
 
@@ -75,7 +74,7 @@ public class Timers {
 		);
 	}
 	
-	public static MessageResponse deleteTimer(String baseURL, String sRef, long begin, long end, Consumer<String> setIndeterminateProgressTask) {
+	public static OpenWebifTools.MessageResponse deleteTimer(String baseURL, String sRef, long begin, long end, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
@@ -95,7 +94,7 @@ public class Timers {
 		);
 	}
 	
-	public static MessageResponse toggleTimer(String baseURL, String sRef, long begin, long end, Consumer<String> setIndeterminateProgressTask) {
+	public static OpenWebifTools.MessageResponse toggleTimer(String baseURL, String sRef, long begin, long end, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
