@@ -109,8 +109,8 @@ public class OpenWebifTools {
 		public final boolean result;
 		MessageResponse(JSON_Data.Value<NV,V> response) throws TraverseException {
 			JSON_Object<NV, V> object = JSON_Data.getObjectValue(response, "Response");
-			message = JSON_Data.getStringValue(object, "message", "Response");
-			result  = JSON_Data.getBoolValue  (object, "result" , "Response");
+			message = JSON_Data.decodeUnicode( JSON_Data.getStringValue(object, "message", "Response") );
+			result  =                          JSON_Data.getBoolValue  (object, "result" , "Response");
 		}
 		public void printTo(PrintStream out) {
 			out.println("Response:");
