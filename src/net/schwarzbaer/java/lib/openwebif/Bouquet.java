@@ -72,6 +72,12 @@ public class Bouquet {
 			this.pos = pos;
 		}
 		
+		@Override
+		public String toString() {
+			if (name!=null && !name.isEmpty()) return name;
+			return String.format("SubService #%d [%d] %s", pos, program, servicereference);
+		}
+
 		public boolean isMarker() {
 			return service.isMarker();
 		}
