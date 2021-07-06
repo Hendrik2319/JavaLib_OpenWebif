@@ -30,8 +30,8 @@ public class SystemInfo {
 		);
 	}
 	
-	final StationInfo service;
-	final Info info;
+	public final StationInfo service;
+	public final Info info;
 	
 	SystemInfo(JSON_Data.Value<NV, V> value) throws TraverseException { this(value,null); }
 	SystemInfo(JSON_Data.Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
