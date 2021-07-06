@@ -30,13 +30,55 @@ public class OpenWebifTools {
 	static class V extends JSON_Data.ValueExtra.Dummy{}
 	
 	private static final boolean SHOW_PARSE_PROGRESS = false;
-
+	
+	public enum ScreenFormat { JPG_Default, PNG }
+	public enum ScreenShotType { TVnOSD, TVonly, OSDonly }
+	public enum ScreenShotResolution { R720, HighRes }
+	
+	public static BufferedImage getScreenShot(String baseURL, ScreenShotType type, ScreenShotResolution res) {
+		return getScreenShot(baseURL, ScreenFormat.JPG_Default, type, res);
+	}
+	public static BufferedImage getScreenShot(String baseURL, ScreenFormat format, ScreenShotType type, ScreenShotResolution res) {
+		if (format==null || type==null || res==null) return null;
+		if (baseURL==null) return null;
+		baseURL = removeAllTrailingSlashes(baseURL);
+		
+		// http://192.168.2.75/grab?format=jpg&r=720&mode=all
+		// http://192.168.2.75/grab?format=jpg&r=720&mode=all  &t=1625500839991
+		// http://192.168.2.75/grab?format=jpg      &mode=all  &t=1625500857642
+		// http://192.168.2.75/grab?format=jpg      &mode=video&t=1625500876819
+		// http://192.168.2.75/grab?format=jpg      &mode=osd  &t=1625500891870
+		String formatStr = "";
+		switch (format) {
+		case JPG_Default: formatStr = "format=jpg"; break;
+		case PNG        : formatStr = "format=png"; break;
+		}
+		
+		String resStr = "";
+		switch (res) {
+		case R720   : resStr = "&r=720"; break;
+		case HighRes: resStr = ""      ; break;
+		}
+		
+		String typeStr = "";
+		switch (type) {
+		case TVnOSD : typeStr = "&mode=all"  ; break;
+		case TVonly : typeStr = "&mode=video"; break;
+		case OSDonly: typeStr = "&mode=osd"  ; break;
+		}
+		
+		return getImage(String.format("%s/grab?%s%s%s", baseURL, formatStr, resStr, typeStr));
+	}
+	
 	public static BufferedImage getPicon(String baseURL, StationID stationID) {
 		if (baseURL==null || stationID==null) return null;
 		baseURL = removeAllTrailingSlashes(baseURL);
 		
 		// http://192.168.2.75/picon/1_0_19_2B66_3F3_1_C00000_0_0_0.png
-		String urlStr = String.format("%s/picon/%s", baseURL, stationID.toPiconImageFileName());
+		return getImage(String.format("%s/picon/%s", baseURL, stationID.toPiconImageFileName()));
+	}
+	
+	private static BufferedImage getImage(String urlStr) {
 		URL url;
 		try {
 			url = new URL(urlStr);
@@ -54,7 +96,7 @@ public class OpenWebifTools {
 			return null;
 		}
 	}
-	
+
 	public enum MessageType {
 		YESNO(0), INFO(1), WARNING(2), ERROR(3);
 		private int value;
@@ -132,9 +174,13 @@ public class OpenWebifTools {
 	}
 
 	public static String getMovieURL(String baseURL, MovieList.Movie movie) {
+		return getFileURL(baseURL, movie.filename, "creating movie URL");
+	}
+	
+	public static String getFileURL(String baseURL, String filepath, String taskLabel) {
 		baseURL = removeAllTrailingSlashes(baseURL);
-		String movieURL = encodeForURL(movie.filename, "creating movie URL");
-		return String.format("%s/file?file=%s", baseURL, movieURL);
+		String encodedfilepath = encodeForURL(filepath, taskLabel);
+		return String.format("%s/file?file=%s", baseURL, encodedfilepath);
 	}
 	
 	public static String getIsServicePlayableURL(String baseURL, StationID stationID) {
