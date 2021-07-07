@@ -23,6 +23,8 @@ import org.w3c.dom.Text;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import net.schwarzbaer.java.lib.openwebif.OpenWebifTools.MessageResponse;
+
 public class RemoteControl {
 	
 //	http://192.168.2.75/static/remotes/
@@ -38,6 +40,27 @@ public class RemoteControl {
 		machinebuild = systemInfo.info.machinebuild;
 	}
 	
+	public MessageResponse sendKeyPress(String baseURL, Key key, Consumer<String> setIndeterminateProgressTask) {
+		if (key==null || key.keyCode==null) {
+			System.err.printf("Can't send KeyPress: Key has no key code: %s%n", key);
+			return null;
+		}
+			
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		
+		// /api/remotecontrol?command=<keycode>
+		String url = String.format("%s/api/remotecontrol?command=%s", baseURL, key.keyCode);
+		
+		String baseURLStr = baseURL;
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
+				err.printf("   sendKeyPress(baseURL)%n");
+				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+			},
+			MessageResponse::new,
+			setIndeterminateProgressTask
+		);
+	}
+
 	public BufferedImage getRemoteControlImage(String baseURL, Consumer<String> setIndeterminateProgressTask) {
 		return getRemoteControlImage(baseURL, machinebuild, setIndeterminateProgressTask);
 	}
@@ -104,6 +127,11 @@ public class RemoteControl {
 			this.shape = shape;
 		}
 
+		@Override
+		public String toString() {
+			return String.format("Key[%s|%s] @ %s", title, keyCode, shape);
+		}
+
 		private static Key parse(Node areaNode, int keyIndex) {
 			NamedNodeMap attributes = areaNode.getAttributes();
 			Node   shapeAttr = attributes.getNamedItem("shape");
@@ -148,11 +176,21 @@ public class RemoteControl {
 			}
 			private Shape(Point corner1, Point corner2) {
 				type = Type.Rect;
-				this.corner1 = corner1;
-				this.corner2 = corner2;
+				this.corner1 = new Point(Math.min(corner1.x,corner2.x), Math.min(corner1.y,corner2.y));
+				this.corner2 = new Point(Math.max(corner1.x,corner2.x), Math.max(corner1.y,corner2.y));
 				this.center = null;
 				this.radius = 0;
 			}
+			
+			@Override
+			public String toString() {
+				switch (type) {
+				case Circle: return String.format("Circle(%d,%d|%d)", center.x, center.y, radius);
+				case Rect  : return String.format("Rect(%d,%d|%d,%d)", corner1.x, corner1.y, corner2.x, corner2.y);
+				}
+				return "????";
+			}
+			
 			public static Shape parse(String shapeStr, String coordsStr, int keyIndex) {
 				if (shapeStr ==null) { System.err.printf("Parsing RemoteControl Description: Can't parse shape %d. No shape type found.%n", keyIndex); return null; }
 				if (coordsStr==null) { System.err.printf("Parsing RemoteControl Description: Can't parse shape %d. No coords found.%n", keyIndex); return null; }
