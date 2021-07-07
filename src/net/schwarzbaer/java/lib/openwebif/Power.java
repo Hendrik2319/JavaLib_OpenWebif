@@ -43,7 +43,7 @@ public class Power {
 
 	private static Values getContentAndParseIt(String baseURL, Commands cmd, Consumer<String> setIndeterminateProgressTask) {
 		String url = getURL(baseURL, cmd);
-		return OpenWebifTools.getContentAndParseIt(url, err->{
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
 			if (cmd==null) {
 				err.printf("   getState(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURL);

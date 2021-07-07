@@ -19,7 +19,7 @@ public class BoxSettings {
 		String url = String.format("%s/api/settings", baseURL);
 		
 		String baseURLStr = baseURL;
-		BoxSettings result = OpenWebifTools.getContentAndParseIt(url, err->{
+		BoxSettings result = OpenWebifTools.getContentAndParseJSON(url, err->{
 				err.printf("   getSystemInfo(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
 			},

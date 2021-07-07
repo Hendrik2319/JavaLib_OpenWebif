@@ -22,7 +22,7 @@ public class Volume {
 	public static Values setVol(String baseURL, int value, Consumer<String> setIndeterminateProgressTask) { return getContentAndParseIt(getURL(baseURL, Commands.set, value), baseURL, "setVol["+value+"]", setIndeterminateProgressTask); }
 
 	private static Values getContentAndParseIt(String url, String baseURL, String commandLabel, Consumer<String> setIndeterminateProgressTask) {
-		return OpenWebifTools.getContentAndParseIt(url, err->{
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
 			err.printf("   %s(baseURL)%n", commandLabel);
 			err.printf("      baseURL  : \"%s\"%n", baseURL);
 		}, result -> {

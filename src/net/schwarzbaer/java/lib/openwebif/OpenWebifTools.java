@@ -78,7 +78,7 @@ public class OpenWebifTools {
 		return getImage(String.format("%s/picon/%s", baseURL, stationID.toPiconImageFileName()));
 	}
 	
-	private static BufferedImage getImage(String urlStr) {
+	static BufferedImage getImage(String urlStr) {
 		URL url;
 		try {
 			url = new URL(urlStr);
@@ -112,7 +112,7 @@ public class OpenWebifTools {
 		if (timeOut_sec!=null) url += String.format("&timeout=%d", timeOut_sec.intValue());
 		
 		String baseURLStr = baseURL;
-		return getContentAndParseIt(url, err->{
+		return getContentAndParseJSON(url, err->{
 				err.printf("   sendMessage(baseURL, message, type, timeOut)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
 				err.printf("      message: \"%s\" -> \"%s\"%n", message, encodedMessage);
@@ -132,7 +132,7 @@ public class OpenWebifTools {
 		String url = String.format("%s/api/messageanswer", baseURL);
 		
 		String baseURLStr = baseURL;
-		return getContentAndParseIt(url, err->{
+		return getContentAndParseJSON(url, err->{
 				err.printf("   getMessageAnswer(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
 			},
@@ -267,7 +267,7 @@ public class OpenWebifTools {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		String url = baseURL+"/api/getcurrent";
 		
-		return getContentAndParseIt(url, err->{
+		return getContentAndParseJSON(url, err->{
 			err.printf("   getCurrentStation(url)%n");
 			err.printf("      url: \"%s\"%n", url);
 		}, CurrentStation::new, setIndeterminateProgressTask);
@@ -360,7 +360,7 @@ public class OpenWebifTools {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		String url = baseURL+"/api/timerlist";
 		
-		return getContentAndParseIt(url, err->{
+		return getContentAndParseJSON(url, err->{
 			err.printf("   readTimers(url)%n");
 			err.printf("      url: \"%s\"%n", url);
 		}, Timers::new, setIndeterminateProgressTask);
@@ -399,7 +399,7 @@ public class OpenWebifTools {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		String url = baseURL+"/api/getallservices";
 		
-		getContentAndParseIt(url, err->{
+		getContentAndParseJSON(url, err->{
 			err.printf("   readBouquets(url)%n");
 			err.printf("      url: \"%s\"%n", url);
 		}, parseResult -> {
@@ -437,26 +437,26 @@ public class OpenWebifTools {
 		}
 		System.out.printf("get MovieList: \"%s\"%n", urlStr);
 		
-		return getContentAndParseIt(urlStr, err->{
+		return getContentAndParseJSON(urlStr, err->{
 			err.printf("   readMovieList(baseURL, dir)%n");
 			err.printf("      baseURL: \"%s\"%n", baseURL);
 			err.printf("      dir    : \"%s\"%n", dir);
 		}, MovieList::new, movieListReadInterface::setIndeterminateProgressTask);
 	}
 
-	interface ParseIt<ResultType> {
+	interface ParseJSON<ResultType> {
 		ResultType parseIt(Value<NV,V> result) throws TraverseException;
 	}
 
-	static <ResultType> ResultType getContentForStationAndParseIt(String url, String commandLabel, String baseURL, StationID stationID, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
-		return getContentAndParseIt(url, err->{
+	static <ResultType> ResultType getContentForStationAndParseIt(String url, String commandLabel, String baseURL, StationID stationID, ParseJSON<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
+		return getContentAndParseJSON(url, err->{
 			err.printf("   %s(baseURL, stationID)%n", commandLabel);
 			err.printf("      baseURL  : \"%s\"%n", baseURL);
 			err.printf("      stationID: %s%n", stationID.toIDStr(true));
 		}, parseIt, setIndeterminateProgressTask);
 	}
 
-	static <ResultType> ResultType getContentAndParseIt(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseIt<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
+	static <ResultType> ResultType getContentAndParseJSON(String url, Consumer<PrintStream> writeTaskInfoOnError, ParseJSON<ResultType> parseIt, Consumer<String> setIndeterminateProgressTask) {
 		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Get Content from URL");
 		String content = getContent(url);
 		if (content==null) return null;

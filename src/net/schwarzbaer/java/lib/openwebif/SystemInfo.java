@@ -21,7 +21,7 @@ public class SystemInfo {
 		String url = String.format("%s/api/about", baseURL);
 		
 		String baseURLStr = baseURL;
-		return OpenWebifTools.getContentAndParseIt(url, err->{
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
 				err.printf("   getSystemInfo(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
 			},

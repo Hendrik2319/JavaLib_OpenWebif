@@ -33,7 +33,7 @@ public class EPG {
 		String url = String.format("%s/api/epgservice?sRef=%s%s%s", baseURL, stationID.toIDStr(true), beginTimeStr, endTimeStr);
 		
 		String baseURL_ = baseURL;
-		Vector<EPGevent> events = OpenWebifTools.getContentAndParseIt(url, err->{
+		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(url, err->{
 			err.printf("   getEPGforService(baseURL, stationID, [beginTime], [endTime])%n");
 			err.printf("      baseURL  : \"%s\"%n", baseURL_);
 			err.printf("      stationID: %s%n", stationID.toIDStr(true));

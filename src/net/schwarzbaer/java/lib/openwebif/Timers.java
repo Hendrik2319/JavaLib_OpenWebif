@@ -61,7 +61,7 @@ public class Timers {
 		String url = String.format("%s/api/timeraddbyeventid?sRef=%s&eventid=%d%s", baseURL, sRef, eventid, extraParameter);
 		
 		String baseURLStr = baseURL;
-		return OpenWebifTools.getContentAndParseIt(url, err->{
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
 				err.printf("   addTimer(baseURL, sRef, eventid, type)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
 				err.printf("      sRef   : \"%s\"%n", sRef);
@@ -81,7 +81,7 @@ public class Timers {
 		String url = String.format("%s/api/timerdelete?sRef=%s&begin=%d&end=%d", baseURL, sRef, begin, end);
 		
 		String baseURLStr = baseURL;
-		return OpenWebifTools.getContentAndParseIt(url, err->{
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
 				err.printf("   deleteTimer(baseURL, sRef, begin, end)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
 				err.printf("      sRef   : \"%s\"%n", sRef);
@@ -101,7 +101,7 @@ public class Timers {
 		String url = String.format("%s/api/timertogglestatus?sRef=%s&begin=%d&end=%d", baseURL, sRef, begin, end);
 		
 		String baseURLStr = baseURL;
-		return OpenWebifTools.getContentAndParseIt(url, err->{
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
 				err.printf("   toggleTimer(baseURL, sRef, begin, end)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
 				err.printf("      sRef   : \"%s\"%n", sRef);
