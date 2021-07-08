@@ -67,23 +67,23 @@ public class RemoteControl {
 
 	public static BufferedImage getRemoteControlImage(String baseURL, String machinebuild, Consumer<String> setIndeterminateProgressTask) {
 		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Get RemoteControl Image");
-		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
-		
-		// http://192.168.2.75/static/remotes/et7x00/rc.png
-		String url = String.format("%s/static/remotes/%s/rc.png", baseURL, machinebuild);
+		String url = getRemoteControlImageURL(baseURL, machinebuild);
 		return OpenWebifTools.getImage(url);
+	}
+
+	public static String getRemoteControlImageURL(String baseURL, String machinebuild) {
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		// http://192.168.2.75/static/remotes/et7x00/rc.png
+		return String.format("%s/static/remotes/%s/rc.png", baseURL, machinebuild);
 	}
 	
 	public Key[] getKeys(String baseURL, Consumer<String> setIndeterminateProgressTask) {
-		return getKeys(baseURL, setIndeterminateProgressTask, machinebuild);
+		return getKeys(baseURL, machinebuild, setIndeterminateProgressTask);
 	}
 
-	public static Key[] getKeys(String baseURL, Consumer<String> setIndeterminateProgressTask, String machinebuild) {
-		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
-		
+	public static Key[] getKeys(String baseURL, String machinebuild, Consumer<String> setIndeterminateProgressTask) {
 		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Get RemoteControl Description File");
-		// http://192.168.2.75/static/remotes/et7x00/remote.html
-		String url = String.format("%s/static/remotes/%s/remote.html", baseURL, machinebuild);
+		String url = getURLofKeyMapping(baseURL, machinebuild);
 		//String url = String.format("%s/static/remotes/%s/rcpositions.xml", baseURL, machinebuild);
 		 
 		String content = OpenWebifTools.getContent(url);
@@ -102,6 +102,12 @@ public class RemoteControl {
 		//}
 		
 		return parseDocument(doc);
+	}
+
+	public static String getURLofKeyMapping(String baseURL, String machinebuild) {
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		// http://192.168.2.75/static/remotes/et7x00/remote.html
+		return String.format("%s/static/remotes/%s/remote.html", baseURL, machinebuild);
 	}
 
 	private static Key[] parseDocument(Document doc) {
