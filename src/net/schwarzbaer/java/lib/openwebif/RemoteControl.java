@@ -3,10 +3,12 @@ package net.schwarzbaer.java.lib.openwebif;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -87,8 +89,18 @@ public class RemoteControl {
 		//String url = String.format("%s/static/remotes/%s/rcpositions.xml", baseURL, machinebuild);
 		 
 		String content = OpenWebifTools.getContent(url);
+		Document doc = parseHTML(content, setIndeterminateProgressTask);
+		return parseKeys(doc, setIndeterminateProgressTask);
+	}
+
+	public static String getURLofKeyMapping(String baseURL, String machinebuild) {
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		// http://192.168.2.75/static/remotes/et7x00/remote.html
+		return String.format("%s/static/remotes/%s/remote.html", baseURL, machinebuild);
+	}
+
+	private static Document parseHTML(String content, Consumer<String> setIndeterminateProgressTask) {
 		if (content==null) return null;
-		
 		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse RemoteControl Description");
 		content = fixDirtyXML(content);
 		//System.out.println();
@@ -100,18 +112,12 @@ public class RemoteControl {
 		//	System.out.println("Parsed RemoteControl Description:");
 		//	XML.showXMLformated(doc);
 		//}
-		
-		return parseDocument(doc);
+		return doc;
 	}
 
-	public static String getURLofKeyMapping(String baseURL, String machinebuild) {
-		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
-		// http://192.168.2.75/static/remotes/et7x00/remote.html
-		return String.format("%s/static/remotes/%s/remote.html", baseURL, machinebuild);
-	}
-
-	private static Key[] parseDocument(Document doc) {
+	private static Key[] parseKeys(Document doc, Consumer<String> setIndeterminateProgressTask) {
 		if (doc==null) return null;
+		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse Keys");
 		
 		NodeList areaNodes = doc.getElementsByTagName("area");
 		Key[] keys = new Key[areaNodes.getLength()];
@@ -119,6 +125,44 @@ public class RemoteControl {
 			keys[i] = Key.parse(areaNodes.item(i),i+1);
 		
 		return keys;
+	}
+
+	public static class KeyMappingFile {
+
+		public final Key[] keys;
+		public final String imageURL;
+		
+		private KeyMappingFile(String imageURL, Key[] keys) {
+			this.imageURL = imageURL;
+			this.keys = keys;
+		}
+
+		public static KeyMappingFile load(File file, Consumer<String> setIndeterminateProgressTask) {
+			
+			String content = OpenWebifTools.getContent(file,StandardCharsets.UTF_8);
+			Document doc = parseHTML(content, setIndeterminateProgressTask);
+			String imageURL = parseImageURL(doc, setIndeterminateProgressTask);;
+			Key[] keys = parseKeys(doc, setIndeterminateProgressTask);
+			
+			return new KeyMappingFile(imageURL,keys);
+		}
+
+		private static String parseImageURL(Document doc, Consumer<String> setIndeterminateProgressTask) {
+			if (doc==null) return null;
+			if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse ImageURL");
+			
+			NodeList nodeList = doc.getElementsByTagName("img");
+			if (nodeList.getLength()==0) return null;
+			
+			Node node = nodeList.item(0);
+			NamedNodeMap attributes = node.getAttributes();
+			if (attributes==null) return null;
+			
+			Node attr = attributes.getNamedItem("src");
+			if (attr==null) return null;
+			
+			return attr.getNodeValue();
+		}
 	}
 	
 	public static class Key {

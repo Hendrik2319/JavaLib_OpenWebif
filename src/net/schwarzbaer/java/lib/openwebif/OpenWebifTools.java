@@ -3,6 +3,7 @@ package net.schwarzbaer.java.lib.openwebif;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
@@ -10,6 +11,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Vector;
 import java.util.function.Consumer;
@@ -536,6 +539,15 @@ public class OpenWebifTools {
 		}
 		
 		return new String(storage.toByteArray());
+	}
+	
+	public static String getContent(File file, Charset cs) {
+		try {
+			return String.join("\r\n", Files.readAllLines(file.toPath(), cs));
+		} catch (IOException e) {
+			System.err.printf("IOException while reading file \"%s\": %s%n", file.getAbsolutePath(), e.getMessage());
+		}
+		return null;
 	}
 
 }
