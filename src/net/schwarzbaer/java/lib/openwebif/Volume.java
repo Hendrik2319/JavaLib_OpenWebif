@@ -38,7 +38,7 @@ public class Volume {
 	private static String getURL(String baseURL, Commands cmd, Integer value) {
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		// "http://et7x00/api/vol?set=mute"
-		return String.format("%s/api/vol?set=%s%s", baseURL, cmd.toString(), value==null ? "" : value);
+		return String.format("%s%s?set=%s%s", baseURL, API.API_VOL, cmd.toString(), value==null ? "" : value);
 	}
 
 	private static class ParseResult {

@@ -30,7 +30,7 @@ public class EPG {
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		String beginTimeStr = beginTime_UnixTS==null ? "" : "&time=" +beginTime_UnixTS.toString();
 		String   endTimeStr =   endTime_UnixTS==null ? "" : "&endTime="+endTime_UnixTS.toString();
-		String url = String.format("%s/api/epgservice?sRef=%s%s%s", baseURL, stationID.toIDStr(true), beginTimeStr, endTimeStr);
+		String url = String.format("%s%s?sRef=%s%s%s", baseURL, API.API_EPGSERVICE, stationID.toIDStr(true), beginTimeStr, endTimeStr);
 		
 		String baseURL_ = baseURL;
 		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(url, err->{

@@ -18,7 +18,7 @@ public class SystemInfo {
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
 		// http://et7x00/api/about
-		String url = String.format("%s/api/about", baseURL);
+		String url = String.format("%s%s", baseURL, API.API_ABOUT);
 		
 		String baseURLStr = baseURL;
 		return OpenWebifTools.getContentAndParseJSON(url, err->{

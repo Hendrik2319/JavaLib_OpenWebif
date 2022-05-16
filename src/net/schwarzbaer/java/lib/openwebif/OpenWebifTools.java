@@ -111,7 +111,7 @@ public class OpenWebifTools {
 		String encodedMessage = encodeForURL(message,"preparing message");
 		
 		// http://et7x00/api/message?text=text&type=1&timeout=15
-		String url = String.format("%s/api/message?text=%s&type=%d", baseURL, encodedMessage, type.value);
+		String url = String.format("%s%s?text=%s&type=%d", baseURL, API.API_MESSAGE, encodedMessage, type.value);
 		if (timeOut_sec!=null) url += String.format("&timeout=%d", timeOut_sec.intValue());
 		
 		String baseURLStr = baseURL;
@@ -132,7 +132,7 @@ public class OpenWebifTools {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		
 		// http://et7x00/api/messageanswer
-		String url = String.format("%s/api/messageanswer", baseURL);
+		String url = baseURL+API.API_MESSAGEANSWER;
 		
 		String baseURLStr = baseURL;
 		return getContentAndParseJSON(url, err->{
@@ -167,7 +167,7 @@ public class OpenWebifTools {
 	public static String getStationZapURL(String baseURL, StationID stationID) {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://et7x00/api/zap?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
-		return String.format("%s/api/zap?sRef=%s", baseURL, stationID.toIDStr(true));
+		return String.format("%s%s?sRef=%s", baseURL, API.API_ZAP, stationID.toIDStr(true));
 	}
 	
 	public static String getStationStreamURL(String baseURL, StationID stationID) {
@@ -189,7 +189,7 @@ public class OpenWebifTools {
 	public static String getIsServicePlayableURL(String baseURL, StationID stationID) {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://et7x00/api/serviceplayable?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
-		return String.format("%s/api/serviceplayable?sRef=%s", baseURL, stationID.toIDStr(true));
+		return String.format("%s%s?sRef=%s", baseURL, API.API_SERVICEPLAYABLE, stationID.toIDStr(true));
 	}
 	
 	public static Boolean getIsServicePlayable(String baseURL, StationID stationID, Consumer<String> setIndeterminateProgressTask) {
@@ -227,7 +227,7 @@ public class OpenWebifTools {
 	public static String getCurrentEPGeventURL(String baseURL, StationID stationID) {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://et7x00/api/epgservicenow?sRef=1:0:19:2B66:3F3:1:C00000:0:0:0:
-		return String.format("%s/api/epgservicenow?sRef=%s", baseURL, stationID.toIDStr(true));
+		return String.format("%s%s?sRef=%s", baseURL, API.API_EPGSERVICENOW, stationID.toIDStr(true));
 	}
 
 	public static Vector<EPGevent> getCurrentEPGevent(String baseURL, StationID stationID, Consumer<String> setIndeterminateProgressTask) {
@@ -268,7 +268,7 @@ public class OpenWebifTools {
 	public static CurrentStation getCurrentStation(String baseURL, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		baseURL = removeAllTrailingSlashes(baseURL);
-		String url = baseURL+"/api/getcurrent";
+		String url = baseURL+API.API_GETCURRENT;
 		
 		return getContentAndParseJSON(url, err->{
 			err.printf("   getCurrentStation(url)%n");
@@ -361,7 +361,7 @@ public class OpenWebifTools {
 	public static Timers readTimers(String baseURL, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		baseURL = removeAllTrailingSlashes(baseURL);
-		String url = baseURL+"/api/timerlist";
+		String url = baseURL+API.API_TIMERLIST;
 		
 		return getContentAndParseJSON(url, err->{
 			err.printf("   readTimers(url)%n");
@@ -400,7 +400,7 @@ public class OpenWebifTools {
 	public static void readBouquets(String baseURL, BouquetReadInterface localInterface) {
 		if (baseURL==null) return;
 		baseURL = removeAllTrailingSlashes(baseURL);
-		String url = baseURL+"/api/getallservices";
+		String url = baseURL+API.API_GETALLSERVICES;
 		
 		getContentAndParseJSON(url, err->{
 			err.printf("   readBouquets(url)%n");
@@ -431,7 +431,7 @@ public class OpenWebifTools {
 
 	public static MovieList readMovieList(String baseURL, String dir, MovieListReadInterface movieListReadInterface) {
 		movieListReadInterface.setIndeterminateProgressTask("Build URL");
-		String urlStr = String.format("%s/api/movielist", baseURL);
+		String urlStr = baseURL+API.API_MOVIELIST;
 		String dir_ = dir;
 		if (dir_!=null) {
 			try { dir_ = URLEncoder.encode(dir_, "UTF-8");

@@ -58,7 +58,7 @@ public class Timers {
 			case RecordAndZap: extraParameter = "&always_zap=1"; break;
 			}
 		
-		String url = String.format("%s/api/timeraddbyeventid?sRef=%s&eventid=%d%s", baseURL, sRef, eventid, extraParameter);
+		String url = String.format("%s%s?sRef=%s&eventid=%d%s", baseURL, API.API_TIMERADDBYEVENTID, sRef, eventid, extraParameter);
 		
 		String baseURLStr = baseURL;
 		return OpenWebifTools.getContentAndParseJSON(url, err->{
@@ -78,7 +78,7 @@ public class Timers {
 		if (baseURL==null) return null;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
-		String url = String.format("%s/api/timerdelete?sRef=%s&begin=%d&end=%d", baseURL, sRef, begin, end);
+		String url = String.format("%s%s?sRef=%s&begin=%d&end=%d", baseURL, API.API_TIMERDELETE, sRef, begin, end);
 		
 		String baseURLStr = baseURL;
 		return OpenWebifTools.getContentAndParseJSON(url, err->{
@@ -98,7 +98,7 @@ public class Timers {
 		if (baseURL==null) return null;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
-		String url = String.format("%s/api/timertogglestatus?sRef=%s&begin=%d&end=%d", baseURL, sRef, begin, end);
+		String url = String.format("%s%s?sRef=%s&begin=%d&end=%d", baseURL, API.API_TIMERTOGGLESTATUS, sRef, begin, end);
 		
 		String baseURLStr = baseURL;
 		return OpenWebifTools.getContentAndParseJSON(url, err->{

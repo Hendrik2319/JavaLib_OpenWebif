@@ -16,7 +16,7 @@ public class BoxSettings {
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
 		// http://et7x00/api/settings
-		String url = String.format("%s/api/settings", baseURL);
+		String url = String.format("%s%s", baseURL, API.API_SETTINGS);
 		
 		String baseURLStr = baseURL;
 		BoxSettings result = OpenWebifTools.getContentAndParseJSON(url, err->{

@@ -51,7 +51,7 @@ public class RemoteControl {
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
 		// /api/remotecontrol?command=<keycode>
-		String url = String.format("%s/api/remotecontrol?command=%s", baseURL, key.keyCode);
+		String url = String.format("%s%s?command=%s", baseURL, API.API_REMOTECONTROL, key.keyCode);
 		
 		String baseURLStr = baseURL;
 		return OpenWebifTools.getContentAndParseJSON(url, err->{

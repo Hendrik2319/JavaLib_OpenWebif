@@ -62,8 +62,8 @@ public class Power {
 	private static String getURL(String baseURL, Commands cmd) {
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		// "http://et7x00/api/powerstate?newstate=0"
-		if (cmd==null) return String.format("%s/api/powerstate", baseURL);
-		return String.format("%s/api/powerstate?newstate=%d", baseURL, cmd.value);
+		if (cmd==null) return String.format("%s%s", baseURL, API.API_POWERSTATE);
+		return String.format("%s%s?newstate=%d", baseURL, API.API_POWERSTATE, cmd.value);
 	}
 
 	private static class ParseResult {
