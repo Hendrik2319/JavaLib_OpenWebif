@@ -153,6 +153,8 @@ public class Timers {
 		public final boolean vpsplugin_overwrite;
 		public final long    vpsplugin_time;
 		public final Vector<LogEntry> logentries;
+		public final Type type;
+		public final State state2;
 		
 		Timer(Value<NV, V> value) throws TraverseException { this(value,null); }
 		Timer(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
@@ -205,13 +207,46 @@ public class Timers {
 	        logentries = new Vector<LogEntry>();
 			for (int i=0; i<logentriesRaw.size(); i++)
 				logentries.add(new LogEntry(logentriesRaw.get(i), debugOutputPrefixStr+".logentries["+i+"]"));
+			
+			type = Type.get(this);
+			state2 = State.get(this);
 		}
 		
-		public boolean isDisabled() {
-			return disabled==1;
+		public enum Type {
+			
+			Record, Switch, RecordNSwitch, Unknown;
+			
+			private static Type get(Timer timer) {
+				if (timer==null) throw new IllegalArgumentException();
+				if (timer.justplay==0 && timer.always_zap==0) return Record;
+				if (timer.justplay==0 && timer.always_zap==1) return RecordNSwitch;
+				if (timer.justplay==1 && timer.always_zap==0) return Switch;
+				return Unknown;
+			}
 		}
-		public boolean isRecording() {
-			return justplay==0;
+		
+		public enum State {
+			
+			Running, Waiting, Deactivated, Finished, Unknown;
+			
+			private static State get(Timer timer) {
+				if (timer==null) throw new IllegalArgumentException();
+				switch ((int)timer.disabled) {
+				case 0:
+					switch ((int)timer.state) {
+					case 0: return Waiting;
+					case 2: return Running;
+					case 3: return Finished;
+					}
+					break;
+				case 1:
+					switch ((int)timer.state) {
+					case 3: return Deactivated;
+					}
+					break;
+				}
+				return Unknown;
+			}
 		}
 	}
 	
