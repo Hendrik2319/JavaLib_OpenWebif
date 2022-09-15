@@ -467,7 +467,7 @@ public class OpenWebifTools {
 		if (setIndeterminateProgressTask!=null) setIndeterminateProgressTask.accept("Parse JSON Code");
 		Value<NV,V> result;
 		try {
-			result = new JSON_Parser<NV,V>(content,null).parse_withParseException();
+			result = JSON_Parser.<NV,V>parse_withParseException(content,null,null);
 		} catch (ParseException e) {
 			System.err.printf("ParseException while parsing JSON code: %s%n", e.getMessage());
 			writeTaskInfoOnError.accept(System.err);
