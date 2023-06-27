@@ -44,18 +44,17 @@ public class Timers {
 			locations.add(JSON_Data.getStringValue(locationsRaw.get(i), debugOutputPrefixStr+".locations["+i+"]"));
 	}
 	
-	public enum TimerType { Record, RecordAndZap, ZapOnly }
-	
-	public static OpenWebifTools.MessageResponse addTimer(String baseURL, String sRef, int eventid, TimerType type, Consumer<String> setIndeterminateProgressTask) {
+	public static OpenWebifTools.MessageResponse addTimer(String baseURL, String sRef, int eventid, Timer.Type type, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		
 		String extraParameter = "";
 		if (type!=null)
 			switch (type) {
-			case Record      : extraParameter = ""; break;
-			case ZapOnly     : extraParameter = "&justplay=1"; break;
-			case RecordAndZap: extraParameter = "&always_zap=1"; break;
+				case Record       : break;
+				case Switch       : extraParameter = "&justplay=1"; break;
+				case RecordNSwitch: extraParameter = "&always_zap=1"; break;
+				case Unknown      : break;
 			}
 		
 		String url = String.format("%s%s?sRef=%s&eventid=%d%s", baseURL, API.API_TIMERADDBYEVENTID, sRef, eventid, extraParameter);
