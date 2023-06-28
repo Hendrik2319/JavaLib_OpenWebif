@@ -354,7 +354,7 @@ public class OpenWebifTools {
 			vpid         =                          JSON_Data.getIntegerValue(object, "vpid"                  , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: vpid"        ); // "vpid"        : 0,     1023,
 			result       =                          JSON_Data.getBoolValue   (object, "result"                , debugOutputPrefixStr);    if (SHOW_PARSE_PROGRESS) System.out.println("StationInfo: result"      ); // "result"      : false, true,
 			
-			stationID = serviceRef==null || serviceRef.isEmpty() ? null : StationID.parseIDStr( removeTrailingStr(serviceRef, ":") );
+			stationID = serviceRef==null || serviceRef.isEmpty() ? null : StationID.parseIDStr( serviceRef );
 		}
 	}
 

@@ -5,7 +5,7 @@ import java.util.Arrays;
 public class StationID implements Comparable<StationID> {
 	
 	// 1:0:1:sid:tsid:onid:namespace:0:0:0:
-	Integer[] numbers;
+	final Integer[] numbers;
 	StationID() {
 		numbers = new Integer[10];
 	}
@@ -53,8 +53,9 @@ public class StationID implements Comparable<StationID> {
 	}
 
 	public static StationID parseIDStr(String idStr) {
-		return parse(idStr.split(":",10), "ID String", idStr);
+		return parse(idStr.split(":",-1), "ID String", idStr);
 	}
+	
 	public static StationID parsePiconImageFileName(String filename) {
 		// 1_0_1_17_1_85_FFFF0000_0_0_0.png
 		String idStr = filename;
@@ -64,16 +65,22 @@ public class StationID implements Comparable<StationID> {
 			String endStr = idStr.substring(idStr.length()-1);
 			if (endStr.equals("_")) idStr = idStr.substring(0,idStr.length()-1);
 		}
-		String[] numberStrs = idStr.split("_",10);
-		if (numberStrs.length!=10) return null;
+		String[] numberStrs = idStr.split("_",-1);
 		return parse(numberStrs, "File Name", filename);
 	}
 
 	private static StationID parse(String[] numberStrs, String sourceType, String sourceStr) {
 		StationID stationID = new StationID();
-		for (int i=0; i<numberStrs.length; i++) {
-			try { stationID.numbers[i] = Integer.parseUnsignedInt(numberStrs[i], 16); }
-			catch (NumberFormatException e) { System.err.printf("Parse Error at position %d in %s \"%s\": Can't parse hex integer.%n", i, sourceType, sourceStr); return null; }
+		for (int i=0; i<stationID.numbers.length; i++) {
+			if (i<numberStrs.length)
+				try { stationID.numbers[i] = Integer.parseUnsignedInt(numberStrs[i], 16); }
+				catch (NumberFormatException e) {
+					System.err.printf("Parse Error at position %d in %s \"%s\": Can't parse hex integer.%n", i, sourceType, sourceStr);
+					// e.printStackTrace();
+					return null;
+				}
+			else
+				stationID.numbers[i] = null;
 		}
 		return stationID;
 	}
