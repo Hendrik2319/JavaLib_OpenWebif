@@ -6,12 +6,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Vector;
@@ -108,7 +108,7 @@ public class OpenWebifTools {
 	
 	public static MessageResponse sendMessage(String baseURL, String message, MessageType type, Integer timeOut_sec, Consumer<String> setIndeterminateProgressTask) {
 		baseURL = removeAllTrailingSlashes(baseURL);
-		String encodedMessage = encodeForURL(message,"preparing message");
+		String encodedMessage = encodeForURL(message);
 		
 		// http://et7x00/api/message?text=text&type=1&timeout=15
 		String url = String.format("%s%s?text=%s&type=%d", baseURL, API.API_MESSAGE, encodedMessage, type.value);
@@ -148,6 +148,16 @@ public class OpenWebifTools {
 		String url = getStationZapURL(baseURL, stationID);
 		return getContentForStationAndParseIt(url, "zapToStation", baseURL, stationID, MessageResponse::new, null);
 	}
+
+	public static MessageResponse zapToMovie(String baseURL, MovieList.Movie movie, Consumer<String> setIndeterminateProgressTask) {
+		setIndeterminateProgressTask.accept("Build URL");
+		String url = getMovieZapURL(baseURL, movie);
+		return getContentAndParseJSON(url, err->{
+			err.printf("   zapToMovie(baseURL, serviceref)%n");
+			err.printf("      baseURL   : \"%s\"%n", baseURL);
+			err.printf("      serviceref: %s%n", movie.serviceref);
+		}, MessageResponse::new, setIndeterminateProgressTask);
+	}
 	
 	public static class MessageResponse {
 		public final String message;
@@ -175,14 +185,21 @@ public class OpenWebifTools {
 		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s:8001/%s", baseURL, stationID.toIDStr(true));
 	}
+	
+	public static String getMovieZapURL(String baseURL, MovieList.Movie movie) {
+		baseURL = removeAllTrailingSlashes(baseURL);
+		// http://et7x00/api/zap?sRef=1%3A0%3A0%3A0%3A0%3A0%3A0%3A0%3A0%3A0%3A/media/hdd/movie-storage/_unsortiert/20230626%202342%20-%20zdf_neo%20HD%20-%20B%C3%B6hmi%20brutzelt%20mit%20Klaas%20Heufer-Umlauf.ts
+		String encodedServiceRef = encodeForURL(movie.serviceref);
+		return String.format("%s%s?sRef=%s", baseURL, API.API_ZAP, encodedServiceRef);
+	}
 
 	public static String getMovieURL(String baseURL, MovieList.Movie movie) {
-		return getFileURL(baseURL, movie.filename, "creating movie URL");
+		return getFileURL(baseURL, movie.filename);
 	}
 	
-	public static String getFileURL(String baseURL, String filepath, String taskLabel) {
+	public static String getFileURL(String baseURL, String filepath) {
 		baseURL = removeAllTrailingSlashes(baseURL);
-		String encodedfilepath = encodeForURL(filepath, taskLabel);
+		String encodedfilepath = encodeForURL(filepath);
 		return String.format("%s/file?file=%s", baseURL, encodedfilepath);
 	}
 	
@@ -424,27 +441,22 @@ public class OpenWebifTools {
 		}, localInterface::setIndeterminateProgressTask);
 		
 	}
-	
-	public interface MovieListReadInterface {
-		void setIndeterminateProgressTask(String taskTitle);
-	}
 
-	public static MovieList readMovieList(String baseURL, String dir, MovieListReadInterface movieListReadInterface) {
-		movieListReadInterface.setIndeterminateProgressTask("Build URL");
-		String urlStr = baseURL+API.API_MOVIELIST;
-		String dir_ = dir;
-		if (dir_!=null) {
-			try { dir_ = URLEncoder.encode(dir_, "UTF-8");
-			} catch (UnsupportedEncodingException e) { System.err.printf("Exception while converting directory name: [UnsupportedEncodingException] %s%n", e.getMessage()); }
-			urlStr = String.format("%s?dirname=%s", urlStr, dir_);
-		}
-		System.out.printf("get MovieList: \"%s\"%n", urlStr);
+	public static MovieList readMovieList(String baseURL, String dir, Consumer<String> setIndeterminateProgressTask) {
+		setIndeterminateProgressTask.accept("Build URL");
+		String url;
+		if (dir!=null)
+			url = String.format("%s%s?dirname=%s", baseURL, API.API_MOVIELIST, encodeForURL(dir));
+		else
+			url = String.format("%s%s"           , baseURL, API.API_MOVIELIST);
 		
-		return getContentAndParseJSON(urlStr, err->{
+		System.out.printf("get MovieList: \"%s\"%n", url);
+		
+		return getContentAndParseJSON(url, err->{
 			err.printf("   readMovieList(baseURL, dir)%n");
 			err.printf("      baseURL: \"%s\"%n", baseURL);
 			err.printf("      dir    : \"%s\"%n", dir);
-		}, MovieList::new, movieListReadInterface::setIndeterminateProgressTask);
+		}, MovieList::new, setIndeterminateProgressTask);
 	}
 
 	interface ParseJSON<ResultType> {
@@ -504,13 +516,9 @@ public class OpenWebifTools {
 		return str;
 	}
 
-	static String encodeForURL(String message, String taskLabel) {
-		try {
-			return URLEncoder.encode(message, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			System.err.printf("UnsupportedEncodingException while %s: %s%n", taskLabel, e.getMessage());
-		}
-		return message;
+	static String encodeForURL(String message)
+	{
+		return URLEncoder.encode(message, StandardCharsets.UTF_8);
 	}
 
 	static String getContent(String urlStr) {
