@@ -167,10 +167,11 @@ public class OpenWebifTools {
 			message = JSON_Data.decodeUnicode( JSON_Data.getStringValue(object, "message", "Response") );
 			result  =                          JSON_Data.getBoolValue  (object, "result" , "Response");
 		}
-		public void printTo(PrintStream out) {
-			out.println("Response:");
-			out.printf ("   Result: %s%n", result);
-			out.printf ("   Message: \"%s\"%n", message);
+		public void printTo(PrintStream out) { printTo(out,""); }
+		public void printTo(PrintStream out, String indent) {
+			out.printf("%sResponse:%n", indent);
+			out.printf("%s   Result: %s%n", indent, result);
+			out.printf("%s   Message: \"%s\"%n", indent, message);
 		}
 	}
 	
