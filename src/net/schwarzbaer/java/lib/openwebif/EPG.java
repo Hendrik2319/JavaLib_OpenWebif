@@ -25,6 +25,30 @@ public class EPG {
 		return stationEPGs.isEmpty();
 	}
 
+	public void readEPGforBouquet(String baseURL, Bouquet bouquet, Long beginTime_UnixTS, Long endTime_Minutes, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return;
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		String beginTimeStr = beginTime_UnixTS ==null ? "" : "&time=" +beginTime_UnixTS.toString();
+		String   endTimeStr =   endTime_Minutes==null ? "" : "&endTime="+endTime_Minutes.toString();
+		String url = String.format("%s%s?bRef=%s%s%s", baseURL, API.API_EPGMULTI, OpenWebifTools.encodeForURL(bouquet.servicereference), beginTimeStr, endTimeStr);
+		
+		String baseURL_ = baseURL;
+		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(url, err->{
+			err.printf("   readEPGforBouquet(baseURL, bouquet, [beginTime], [endTime])%n");
+			err.printf("      baseURL: \"%s\"%n", baseURL_);
+			err.printf("      bouquet: %s%n", bouquet.servicereference);
+			if (beginTime_UnixTS !=null) err.printf("      beginTime: %d, %s%n"    , beginTime_UnixTS , tools.getTimeStr(beginTime_UnixTS*1000));
+			if (  endTime_Minutes!=null) err.printf("      endTime  : %d minutes%n",   endTime_Minutes);
+			err.printf("   -> url: %s%n", url);
+		}, result -> {
+			OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "EPGevents for Bouquet");
+			if (!parseResult.result) return null;
+			return parseResult.events;
+		}, setIndeterminateProgressTask);
+		
+		addAll(events);
+	}
+
 	public void readEPGforService(String baseURL, StationID stationID, Long beginTime_UnixTS, Long endTime_UnixTS, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
@@ -57,17 +81,16 @@ public class EPG {
 	private void addAll(StationID stationID, Vector<EPGevent> events) {
 		StationEPG stationEPG = getStationEPG(stationID.toIDStr(true), true);
 		stationEPG.add(events);
-		
-		//for (EPGevent event:events) {
-		//	if (event.id==null) continue;
-		//	
-		//	this.events.put(event.id, event);
-		//	
-		//	if (event.sref==null) continue;
-		//	
-		//	StationEPG stationEPG = getStationEPG(event.sref, true);
-		//	stationEPG.add(event.id);
-		//}
+	}
+
+	private void addAll(Vector<EPGevent> events) {
+		for (EPGevent event:events) {
+			if (event.id==null) continue;
+			if (event.sref==null) continue;
+			
+			StationEPG stationEPG = getStationEPG(event.sref, true);
+			stationEPG.add(event);
+		}
 	}
 
 	private synchronized StationEPG getStationEPG(String sref, boolean addIfNotExists) {
@@ -119,17 +142,21 @@ public class EPG {
 			for (EPGevent oldEvent:this.events.values())
 				oldEvent.isUpToDate = false;
 			
-			for (EPGevent event:events) {
-				if (!sref.equals(event.sref)) {
-					System.out.printf("Found Wrong EPGevent: Station.SRef=\"%s\", EPGevent.SRef=\"%s\"%n", sref, event.sref);
-					continue;
-				}
-				if (event.id==null) {
-					System.out.printf("Found Wrong EPGevent: EPGevent.ID = <null>%n");
-					continue;
-				}
-				this.events.put(event.id, new EPGevent(event));
+			for (EPGevent event:events)
+				add(event);
+		}
+
+		public synchronized void add(EPGevent event)
+		{
+			if (!sref.equals(event.sref)) {
+				System.out.printf("Found Wrong EPGevent: Station.SRef=\"%s\", EPGevent.SRef=\"%s\"%n", sref, event.sref);
+				return;
 			}
+			if (event.id==null) {
+				System.out.printf("Found Wrong EPGevent: EPGevent.ID = <null>%n");
+				return;
+			}
+			this.events.put(event.id, new EPGevent(event));
 		}
 		
 	}

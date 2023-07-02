@@ -3,6 +3,7 @@ package net.schwarzbaer.java.lib.openwebif;
 class API {
 
 	static final String API_ABOUT             = "/api/about";
+	static final String API_EPGMULTI          = "/api/epgmulti";
 	static final String API_EPGSERVICE        = "/api/epgservice";
 	static final String API_EPGSERVICENOW     = "/api/epgservicenow";
 	static final String API_GETALLSERVICES    = "/api/getallservices";
