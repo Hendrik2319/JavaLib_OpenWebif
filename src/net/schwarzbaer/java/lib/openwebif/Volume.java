@@ -24,7 +24,8 @@ public class Volume {
 	private static Values getContentAndParseIt(String url, String baseURL, String commandLabel, Consumer<String> setIndeterminateProgressTask) {
 		return OpenWebifTools.getContentAndParseJSON(url, err->{
 			err.printf("   %s(baseURL)%n", commandLabel);
-			err.printf("      baseURL  : \"%s\"%n", baseURL);
+			err.printf("      baseURL: \"%s\"%n", baseURL);
+			err.printf("      -> url : \"%s\"%n", url);
 		}, result -> {
 			ParseResult parseResult = new ParseResult(result);
 			if (!parseResult.result) return null;

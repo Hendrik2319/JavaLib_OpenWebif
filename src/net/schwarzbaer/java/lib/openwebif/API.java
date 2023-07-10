@@ -11,6 +11,7 @@ class API {
 	static final String API_MESSAGE           = "/api/message";
 	static final String API_MESSAGEANSWER     = "/api/messageanswer";
 	static final String API_MOVIELIST         = "/api/movielist";
+	static final String API_MOVIEDELETE       = "/api/moviedelete";
 	static final String API_POWERSTATE        = "/api/powerstate";
 	static final String API_REMOTECONTROL     = "/api/remotecontrol";
 	static final String API_SERVICEPLAYABLE   = "/api/serviceplayable";

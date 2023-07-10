@@ -24,6 +24,7 @@ public class SystemInfo {
 		return OpenWebifTools.getContentAndParseJSON(url, err->{
 				err.printf("   getSystemInfo(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+				err.printf("      -> url : \"%s\"%n", url);
 			},
 			SystemInfo::new,
 			setIndeterminateProgressTask

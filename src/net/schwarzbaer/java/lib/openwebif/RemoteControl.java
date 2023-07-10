@@ -55,8 +55,10 @@ public class RemoteControl {
 		
 		String baseURLStr = baseURL;
 		return OpenWebifTools.getContentAndParseJSON(url, err->{
-				err.printf("   sendKeyPress(baseURL)%n");
+				err.printf("   sendKeyPress(baseURL, key)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+				err.printf("      key    : [%s] \"%s\"%n", key.keyCode, key.title);
+				err.printf("      -> url : \"%s\"%n", url);
 			},
 			MessageResponse::new,
 			setIndeterminateProgressTask

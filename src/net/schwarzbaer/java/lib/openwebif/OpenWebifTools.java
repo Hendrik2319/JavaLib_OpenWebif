@@ -115,6 +115,7 @@ public class OpenWebifTools {
 		if (timeOut_sec!=null) url += String.format("&timeout=%d", timeOut_sec.intValue());
 		
 		String baseURLStr = baseURL;
+		String url_ = url;
 		return getContentAndParseJSON(url, err->{
 				err.printf("   sendMessage(baseURL, message, type, timeOut)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
@@ -122,6 +123,7 @@ public class OpenWebifTools {
 				err.printf("      type   : %s[%d]%n", type, type.value);
 				if (timeOut_sec!=null)
 					err.printf("      timeOut: %d%n", timeOut_sec);
+				err.printf("      -> url : \"%s\"%n", url_);
 			},
 			MessageResponse::new,
 			setIndeterminateProgressTask
@@ -138,6 +140,7 @@ public class OpenWebifTools {
 		return getContentAndParseJSON(url, err->{
 				err.printf("   getMessageAnswer(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+				err.printf("      -> url : \"%s\"%n", url);
 			},
 			MessageResponse::new,
 			setIndeterminateProgressTask
@@ -156,6 +159,18 @@ public class OpenWebifTools {
 			err.printf("   zapToMovie(baseURL, serviceref)%n");
 			err.printf("      baseURL   : \"%s\"%n", baseURL);
 			err.printf("      serviceref: %s%n", movie.serviceref);
+			err.printf("      -> url    : \"%s\"%n", url);
+		}, MessageResponse::new, setIndeterminateProgressTask);
+	}
+
+	public static MessageResponse deleteMovie(String baseURL, MovieList.Movie movie, Consumer<String> setIndeterminateProgressTask) {
+		setIndeterminateProgressTask.accept("Build URL");
+		String url = getMovieDeleteURL(baseURL, movie);
+		return getContentAndParseJSON(url, err->{
+			err.printf("   deleteMovie(baseURL, serviceref)%n");
+			err.printf("      baseURL   : \"%s\"%n", baseURL);
+			err.printf("      serviceref: %s%n", movie.serviceref);
+			err.printf("      -> url    : \"%s\"%n", url);
 		}, MessageResponse::new, setIndeterminateProgressTask);
 	}
 	
@@ -185,6 +200,13 @@ public class OpenWebifTools {
 		baseURL = removeAllTrailingSlashes(baseURL);
 		// http://192.168.2.75:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:
 		return String.format("%s:8001/%s", baseURL, stationID.toIDStr(true));
+	}
+	
+	public static String getMovieDeleteURL(String baseURL, MovieList.Movie movie) {
+		baseURL = removeAllTrailingSlashes(baseURL);
+		// http://et7x00/api/moviedelete?sRef=...
+		String encodedServiceRef = encodeForURL(movie.serviceref);
+		return String.format("%s%s?sRef=%s", baseURL, API.API_MOVIEDELETE, encodedServiceRef);
 	}
 	
 	public static String getMovieZapURL(String baseURL, MovieList.Movie movie) {
@@ -457,6 +479,7 @@ public class OpenWebifTools {
 			err.printf("   readMovieList(baseURL, dir)%n");
 			err.printf("      baseURL: \"%s\"%n", baseURL);
 			err.printf("      dir    : \"%s\"%n", dir);
+			err.printf("      -> url : \"%s\"%n", url);
 		}, MovieList::new, setIndeterminateProgressTask);
 	}
 
@@ -469,6 +492,7 @@ public class OpenWebifTools {
 			err.printf("   %s(baseURL, stationID)%n", commandLabel);
 			err.printf("      baseURL  : \"%s\"%n", baseURL);
 			err.printf("      stationID: %s%n", stationID.toIDStr(true));
+			err.printf("      -> url   : \"%s\"%n", url);
 		}, parseIt, setIndeterminateProgressTask);
 	}
 

@@ -22,6 +22,7 @@ public class BoxSettings {
 		BoxSettings result = OpenWebifTools.getContentAndParseJSON(url, err->{
 				err.printf("   getSystemInfo(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURLStr);
+				err.printf("      -> url : \"%s\"%n", url);
 			},
 			BoxSettings::new,
 			setIndeterminateProgressTask

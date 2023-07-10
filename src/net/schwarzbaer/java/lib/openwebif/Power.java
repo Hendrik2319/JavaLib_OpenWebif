@@ -47,10 +47,12 @@ public class Power {
 			if (cmd==null) {
 				err.printf("   getState(baseURL)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURL);
+				err.printf("      -> url : \"%s\"%n", url);
 			} else {
 				err.printf("   setState(baseURL,cmd)%n");
 				err.printf("      baseURL: \"%s\"%n", baseURL);
 				err.printf("      cmd    : %s[%d,\"%s\"]%n", cmd.name(), cmd.value, cmd.title);
+				err.printf("      -> url : \"%s\"%n", url);
 			}
 		}, result -> {
 			ParseResult parseResult = new ParseResult(result);
