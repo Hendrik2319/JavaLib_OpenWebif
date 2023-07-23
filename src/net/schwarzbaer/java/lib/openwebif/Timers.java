@@ -44,6 +44,17 @@ public class Timers {
 			locations.add(JSON_Data.getStringValue(locationsRaw.get(i), debugOutputPrefixStr+".locations["+i+"]"));
 	}
 	
+	public static Timers read(String baseURL, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		String url = baseURL+API.API_TIMERLIST;
+		
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
+			err.printf("   readTimers(url)%n");
+			err.printf("      url: \"%s\"%n", url);
+		}, Timers::new, setIndeterminateProgressTask);
+	}
+	
 	public static OpenWebifTools.MessageResponse addTimer(String baseURL, String sRef, int eventid, Timer.Type type, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
@@ -111,6 +122,19 @@ public class Timers {
 			OpenWebifTools.MessageResponse::new,
 			setIndeterminateProgressTask
 		);
+	}
+	
+	public static OpenWebifTools.MessageResponse cleanup(String baseURL, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		String url = baseURL+API.API_TIMERCLEANUP;
+		
+		String baseURL_ = baseURL;
+		return OpenWebifTools.getContentAndParseJSON(url, err->{
+			err.printf("   cleanup(baseURL)%n");
+			err.printf("      baseURL: \"%s\"%n", baseURL_);
+			err.printf("      -> url : \"%s\"%n", url);
+		}, OpenWebifTools.MessageResponse::new, setIndeterminateProgressTask);
 	}
 
 	public static class Timer {

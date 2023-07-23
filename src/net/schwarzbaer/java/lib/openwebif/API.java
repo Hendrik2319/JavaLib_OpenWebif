@@ -17,6 +17,7 @@ class API {
 	static final String API_SERVICEPLAYABLE   = "/api/serviceplayable";
 	static final String API_SETTINGS          = "/api/settings";
 	static final String API_TIMERADDBYEVENTID = "/api/timeraddbyeventid";
+	static final String API_TIMERCLEANUP      = "/api/timercleanup";
 	static final String API_TIMERDELETE       = "/api/timerdelete";
 	static final String API_TIMERLIST         = "/api/timerlist";
 	static final String API_TIMERTOGGLESTATUS = "/api/timertogglestatus";

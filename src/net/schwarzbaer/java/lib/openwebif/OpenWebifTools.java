@@ -398,17 +398,6 @@ public class OpenWebifTools {
 		}
 	}
 
-	public static Timers readTimers(String baseURL, Consumer<String> setIndeterminateProgressTask) {
-		if (baseURL==null) return null;
-		baseURL = removeAllTrailingSlashes(baseURL);
-		String url = baseURL+API.API_TIMERLIST;
-		
-		return getContentAndParseJSON(url, err->{
-			err.printf("   readTimers(url)%n");
-			err.printf("      url: \"%s\"%n", url);
-		}, Timers::new, setIndeterminateProgressTask);
-	}
-
 	public interface BouquetReadInterface {
 		void setIndeterminateProgressTask(String taskTitle);
 		void addBouquet(Bouquet Bouquet);
