@@ -1,5 +1,6 @@
 package net.schwarzbaer.java.lib.openwebif;
 
+import java.io.PrintStream;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Vector;
@@ -21,12 +22,22 @@ public class EPG {
 		String getTimeStr(long millis);
 	}
 	
+	public synchronized void showStatus(PrintStream out)
+	{
+		int eventCount = 0;
+		for (StationEPG stationEPG : stationEPGs.values())
+			eventCount += stationEPG.events.size();
+		out.printf("EPG:%n");
+		out.printf("    stations: %d%n", stationEPGs.size());
+		out.printf("    events  : %d%n", eventCount);
+	}
+
 	public boolean isEmpty() {
 		return stationEPGs.isEmpty();
 	}
 
-	public void readEPGforBouquet(String baseURL, Bouquet bouquet, Long beginTime_UnixTS, Long endTime_Minutes, Consumer<String> setIndeterminateProgressTask) {
-		if (baseURL==null) return;
+	public int readEPGforBouquet(String baseURL, Bouquet bouquet, Long beginTime_UnixTS, Long endTime_Minutes, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return 0;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		String beginTimeStr = beginTime_UnixTS ==null ? "" : "&time=" +beginTime_UnixTS.toString();
 		String   endTimeStr =   endTime_Minutes==null ? "" : "&endTime="+endTime_Minutes.toString();
@@ -47,6 +58,8 @@ public class EPG {
 		}, setIndeterminateProgressTask);
 		
 		addAll(events);
+		
+		return events.size();
 	}
 
 	public void readEPGforService(String baseURL, StationID stationID, Long beginTime_UnixTS, Long endTime_UnixTS, Consumer<String> setIndeterminateProgressTask) {
