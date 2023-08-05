@@ -36,8 +36,9 @@ public class EPG {
 		return stationEPGs.isEmpty();
 	}
 
-	public int readEPGforBouquet(String baseURL, Bouquet bouquet, Long beginTime_UnixTS, Long endTime_Minutes, Consumer<String> setIndeterminateProgressTask) {
-		if (baseURL==null) return 0;
+	public Vector<EPGevent> readEPGforBouquet(String baseURL, Bouquet bouquet, Long beginTime_UnixTS, Long endTime_Minutes, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		String beginTimeStr = beginTime_UnixTS ==null ? "" : "&time=" +beginTime_UnixTS.toString();
 		String   endTimeStr =   endTime_Minutes==null ? "" : "&endTime="+endTime_Minutes.toString();
@@ -59,11 +60,12 @@ public class EPG {
 		
 		addAll(events);
 		
-		return events.size();
+		return events;
 	}
 
-	public void readEPGforService(String baseURL, StationID stationID, Long beginTime_UnixTS, Long endTime_UnixTS, Consumer<String> setIndeterminateProgressTask) {
-		if (baseURL==null) return;
+	public Vector<EPGevent> readEPGforService(String baseURL, StationID stationID, Long beginTime_UnixTS, Long endTime_UnixTS, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
 		String beginTimeStr = beginTime_UnixTS==null ? "" : "&time=" +beginTime_UnixTS.toString();
 		String   endTimeStr =   endTime_UnixTS==null ? "" : "&endTime="+endTime_UnixTS.toString();
@@ -84,6 +86,8 @@ public class EPG {
 		}, setIndeterminateProgressTask);
 		
 		addAll(stationID, events);
+		
+		return events;
 	}
 	
 	public Vector<EPGevent> getEvents(StationID stationID, long beginTime_UnixTS, Long endTime_UnixTS, boolean sorted) {
