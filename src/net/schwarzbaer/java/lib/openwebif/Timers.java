@@ -152,7 +152,7 @@ public class Timers {
 		public final String  dirname;
 		public final long    disabled;
 		public final long    dontsave;
-		public final long    duration;
+		public final double  duration;
 		public final long    eit;
 		public final long    end;
 		public final String  filename;
@@ -200,7 +200,7 @@ public class Timers {
 	        dirname             = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "dirname"                    , debugOutputPrefixStr) ); // String
 	        disabled            =                                 JSON_Data.getIntegerValue (object, "disabled"                   , debugOutputPrefixStr);   // Integer
 	        dontsave            =                                 JSON_Data.getIntegerValue (object, "dontsave"                   , debugOutputPrefixStr);   // Integer
-	        duration            =                                 JSON_Data.getIntegerValue (object, "duration"                   , debugOutputPrefixStr);   // Integer
+	        duration            =                                 JSON_Data.getNumber       (object, "duration"                   , debugOutputPrefixStr);   // Integer
 	        eit                 =                                 JSON_Data.getIntegerValue (object, "eit"                        , debugOutputPrefixStr);   // Integer
 	        end                 =                                 JSON_Data.getIntegerValue (object, "end"                        , debugOutputPrefixStr);   // Integer
 	        filename            = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "filename"      , false, true, debugOutputPrefixStr) ); // [String, Null]
