@@ -155,6 +155,7 @@ public class Timers {
 		public final double  duration;
 		public final long    eit;
 		public final long    end;
+		public final double  end_double;
 		public final String  filename;
 		public final long    firsttryprepare;
 		public final long    isAutoTimer;
@@ -183,6 +184,8 @@ public class Timers {
 		Timer(Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "Timer";
 			
+	        Boolean repeatedBool = null;
+	        Long    repeatedInt = null; 
 	        @SuppressWarnings("unused")
 			Null nextactivationNull, filenameNull;
 	        JSON_Array<NV, V> logentriesRaw;
@@ -200,9 +203,9 @@ public class Timers {
 	        dirname             = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "dirname"                    , debugOutputPrefixStr) ); // String
 	        disabled            =                                 JSON_Data.getIntegerValue (object, "disabled"                   , debugOutputPrefixStr);   // Integer
 	        dontsave            =                                 JSON_Data.getIntegerValue (object, "dontsave"                   , debugOutputPrefixStr);   // Integer
-	        duration            =                                 JSON_Data.getNumber       (object, "duration"                   , debugOutputPrefixStr);   // Integer
+	        duration            =                                 JSON_Data.getNumber       (object, "duration"                   , debugOutputPrefixStr);   // [Integer, Float]
 	        eit                 =                                 JSON_Data.getIntegerValue (object, "eit"                        , debugOutputPrefixStr);   // Integer
-	        end                 =                                 JSON_Data.getIntegerValue (object, "end"                        , debugOutputPrefixStr);   // Integer
+	        end_double          =                                 JSON_Data.getNumber       (object, "end"                        , debugOutputPrefixStr);   // [Integer, Float]
 	        filename            = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "filename"      , false, true, debugOutputPrefixStr) ); // [String, Null]
 			filenameNull        =                                 JSON_Data.getNullValue    (object, "filename"      , false, true, debugOutputPrefixStr);   // [String, Null]
 	        firsttryprepare     =                                 JSON_Data.getIntegerValue (object, "firsttryprepare"            , debugOutputPrefixStr);   // Integer
@@ -215,7 +218,8 @@ public class Timers {
 	        pipzap              =                                 JSON_Data.getIntegerValue (object, "pipzap"                     , debugOutputPrefixStr);   // Integer
 	        realbegin           = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "realbegin"                  , debugOutputPrefixStr) ); // String
 	        realend             = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "realend"                    , debugOutputPrefixStr) ); // String
-	        repeated            =                                 JSON_Data.getIntegerValue (object, "repeated"                   , debugOutputPrefixStr);   // Integer
+	        repeatedInt         =                                 JSON_Data.getIntegerValue (object, "repeated"      , false, true, debugOutputPrefixStr);   // Integer
+			repeatedBool        =                                 JSON_Data.getBoolValue    (object, "repeated"      , false, true, debugOutputPrefixStr);   // Bool
 	        servicename         = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "servicename"                , debugOutputPrefixStr) ); // String
 	        serviceref          = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue  (object, "serviceref"                 , debugOutputPrefixStr) ); // String
 	        startprepare        =                                 JSON_Data.getNumber       (object, "startprepare"               , debugOutputPrefixStr);   // [Integer, Float]
@@ -226,6 +230,12 @@ public class Timers {
 	        vpsplugin_enabled   =                                 JSON_Data.getBoolValue    (object, "vpsplugin_enabled"          , debugOutputPrefixStr);   // Bool
 	        vpsplugin_overwrite =                                 JSON_Data.getBoolValue    (object, "vpsplugin_overwrite"        , debugOutputPrefixStr);   // Bool
 	        vpsplugin_time      =                                 JSON_Data.getIntegerValue (object, "vpsplugin_time"             , debugOutputPrefixStr);   // Integer
+	        
+	        end = Math.round(end_double);
+	        
+	        if      (repeatedInt  != null) repeated = repeatedInt;
+			else if (repeatedBool != null) repeated = repeatedBool ? 1 : 0;
+			else throw new TraverseException("%s.repeated isn't an IntegerValue nor a BoolValue", debugOutputPrefixStr);
 	        
 	        logentries = new Vector<LogEntry>();
 			for (int i=0; i<logentriesRaw.size(); i++)
