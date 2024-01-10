@@ -26,8 +26,8 @@ public class Service {
 		String[] strs = serviceStr.split(":",12);
 		for (int i=0; i<strs.length; i++) {
 			if (i<10)
-				try { service.stationID.numbers[i] = Integer.parseInt(strs[i], 16); }
-				catch (NumberFormatException e) { System.err.printf("Parse Error @ [%d] in Service \"%s\": Can't parse hex integer.%n", i, serviceStr); return null; }
+				try { service.stationID.numbers[i] = Integer.parseUnsignedInt(strs[i], 16); }
+				catch (NumberFormatException e) { System.err.printf("Parse Error @ [%d] (%s) in Service \"%s\": Can't parse hex integer.%n", i, strs[i], serviceStr); return null; }
 			else if (i==10) {
 				if (!strs[i].isEmpty()) {
 					System.err.printf("Parse Error @ [%d] in Service \"%s\": 11th Value is not empty.%n", i, serviceStr);

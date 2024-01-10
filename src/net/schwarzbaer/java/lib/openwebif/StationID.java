@@ -75,7 +75,7 @@ public class StationID implements Comparable<StationID> {
 			if (i<numberStrs.length)
 				try { stationID.numbers[i] = Integer.parseUnsignedInt(numberStrs[i], 16); }
 				catch (NumberFormatException e) {
-					System.err.printf("Parse Error at position %d in %s \"%s\": Can't parse hex integer.%n", i, sourceType, sourceStr);
+					System.err.printf("Parse Error at position %d (%s) in %s \"%s\": Can't parse hex integer.%n", i, numberStrs[i], sourceType, sourceStr);
 					// e.printStackTrace();
 					return null;
 				}
