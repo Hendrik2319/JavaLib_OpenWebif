@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -84,9 +86,12 @@ public class OpenWebifTools {
 	static BufferedImage getImage(String urlStr) {
 		URL url;
 		try {
-			url = new URL(urlStr);
+			url = new URI(urlStr).toURL();
 		} catch (MalformedURLException ex) {
 			System.err.printf("MalformedURLException in URL(\"%s\"): %s%n", urlStr, ex.getMessage());
+			return null;
+		} catch (URISyntaxException ex) {
+			System.err.printf("URISyntaxException in URL(\"%s\"): %s%n", urlStr, ex.getMessage());
 			return null;
 		}
 		
@@ -533,8 +538,9 @@ public class OpenWebifTools {
 
 	static String getContent(String urlStr) {
 		URL url;
-		try { url = new URL(urlStr); }
+		try { url = new URI(urlStr).toURL(); }
 		catch (MalformedURLException e) { System.err.printf("MalformedURL: %s%n", e.getMessage()); return null; }
+		catch (URISyntaxException    e) { System.err.printf("WrongURISyntax: %s%n", urlStr, e.getMessage()); return null; }
 		
 		URLConnection conn;
 		try { conn = url.openConnection(); }
