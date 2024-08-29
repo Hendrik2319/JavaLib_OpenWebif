@@ -45,18 +45,23 @@ public class EPG {
 		String url = String.format("%s%s?bRef=%s%s%s", baseURL, API.API_EPGMULTI, OpenWebifTools.encodeForURL(bouquet.servicereference), beginTimeStr, endTimeStr);
 		
 		String baseURL_ = baseURL;
-		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(url, err->{
-			err.printf("   readEPGforBouquet(baseURL, bouquet, [beginTime], [endTime])%n");
-			err.printf("      baseURL  : \"%s\"%n", baseURL_);
-			err.printf("      bouquet  : %s%n", bouquet.servicereference);
-			if (beginTime_UnixTS !=null) err.printf("      beginTime: %d, %s%n"    , beginTime_UnixTS , tools.getTimeStr(beginTime_UnixTS*1000));
-			if (  endTime_Minutes!=null) err.printf("      endTime  : %d minutes%n",   endTime_Minutes);
-			err.printf("      -> url   : \"%s\"%n", url);
-		}, result -> {
-			OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "EPGevents for Bouquet");
-			if (!parseResult.result) return null;
-			return parseResult.events;
-		}, setIndeterminateProgressTask);
+		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(
+				url,
+				err->{
+					err.printf("   readEPGforBouquet(baseURL, bouquet, [beginTime], [endTime])%n");
+					err.printf("      baseURL  : \"%s\"%n", baseURL_);
+					err.printf("      bouquet  : %s%n", bouquet.servicereference);
+					if (beginTime_UnixTS !=null) err.printf("      beginTime: %d, %s%n"    , beginTime_UnixTS , tools.getTimeStr(beginTime_UnixTS*1000));
+					if (  endTime_Minutes!=null) err.printf("      endTime  : %d minutes%n",   endTime_Minutes);
+					err.printf("      -> url   : \"%s\"%n", url);
+				},
+				result -> {
+					OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "EPGevents for Bouquet");
+					if (!parseResult.result) return null;
+					return parseResult.events;
+				},
+				setIndeterminateProgressTask
+		);
 		
 		addAll(events);
 		
@@ -72,18 +77,23 @@ public class EPG {
 		String url = String.format("%s%s?sRef=%s%s%s", baseURL, API.API_EPGSERVICE, stationID.toIDStr(true), beginTimeStr, endTimeStr);
 		
 		String baseURL_ = baseURL;
-		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(url, err->{
-			err.printf("   getEPGforService(baseURL, stationID, [beginTime], [endTime])%n");
-			err.printf("      baseURL  : \"%s\"%n", baseURL_);
-			err.printf("      stationID: %s%n", stationID.toIDStr(true));
-			if (beginTime_UnixTS!=null) err.printf("      beginTime: %d, %s%n", beginTime_UnixTS, tools.getTimeStr(beginTime_UnixTS*1000));
-			if (  endTime_UnixTS!=null) err.printf("      endTime  : %d, %s%n",   endTime_UnixTS, tools.getTimeStr(  endTime_UnixTS*1000));
-			err.printf("      -> url   : \"%s\"%n", url);
-		}, result -> {
-			OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result);
-			if (!parseResult.result) return null;
-			return parseResult.events;
-		}, setIndeterminateProgressTask);
+		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(
+				url,
+				err->{
+					err.printf("   getEPGforService(baseURL, stationID, [beginTime], [endTime])%n");
+					err.printf("      baseURL  : \"%s\"%n", baseURL_);
+					err.printf("      stationID: %s%n", stationID.toIDStr(true));
+					if (beginTime_UnixTS!=null) err.printf("      beginTime: %d, %s%n", beginTime_UnixTS, tools.getTimeStr(beginTime_UnixTS*1000));
+					if (  endTime_UnixTS!=null) err.printf("      endTime  : %d, %s%n",   endTime_UnixTS, tools.getTimeStr(  endTime_UnixTS*1000));
+					err.printf("      -> url   : \"%s\"%n", url);
+				},
+				result -> {
+					OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result);
+					if (!parseResult.result) return null;
+					return parseResult.events;
+				},
+				setIndeterminateProgressTask
+		);
 		
 		addAll(stationID, events);
 		
