@@ -304,7 +304,7 @@ public class OpenWebifTools {
 			result    = JSON_Data.getBoolValue (object, "result", debugOutputPrefixStr);
 			eventsRaw = JSON_Data.getArrayValue(object, "events", debugOutputPrefixStr);
 			
-			events = new Vector<EPGevent>();
+			events = new Vector<>();
 			for (int i=0; i<eventsRaw.size(); i++)
 				events.add(EPGevent.parse(eventsRaw.get(i), debugOutputPrefixStr+"["+i+"]"));
 		}

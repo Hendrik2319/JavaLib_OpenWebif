@@ -44,6 +44,14 @@ public class Timers {
 			locations.add(JSON_Data.getStringValue(locationsRaw.get(i), debugOutputPrefixStr+".locations["+i+"]"));
 	}
 	
+	public Vector<Timer> getStationTimers(String sref) {
+		Vector<Timer> stationTimers = new Vector<>();
+		for (Timer timer : timers)
+			if (sref.equalsIgnoreCase( timer.serviceref ))
+				stationTimers.add(timer);
+		return stationTimers;
+	}
+	
 	public static Timers read(String baseURL, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
@@ -237,7 +245,7 @@ public class Timers {
 			else if (repeatedBool != null) repeated = repeatedBool ? 1 : 0;
 			else throw new TraverseException("%s.repeated isn't an IntegerValue nor a BoolValue", debugOutputPrefixStr);
 	        
-	        logentries = new Vector<LogEntry>();
+	        logentries = new Vector<>();
 			for (int i=0; i<logentriesRaw.size(); i++)
 				logentries.add(new LogEntry(logentriesRaw.get(i), debugOutputPrefixStr+".logentries["+i+"]"));
 			

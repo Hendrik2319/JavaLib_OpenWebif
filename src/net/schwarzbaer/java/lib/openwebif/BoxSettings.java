@@ -54,7 +54,7 @@ public class BoxSettings {
 		settingsArr = JSON_Data.getArrayValue(object, "settings", debugOutputPrefixStr)  ; // :Array   []:Array   [][]:[String, Integer]
 		
 		
-		settings = new HashMap<String, BoxSettingsValue>();
+		settings = new HashMap<>();
 		for (int i=0; i<settingsArr.size(); i++) {
 			JSON_Array<NV, V> arrayValue = JSON_Data.getArrayValue(settingsArr.get(i), debugOutputPrefixStr+".settings["+i+"]");
 			if (arrayValue.size()!=2) {
