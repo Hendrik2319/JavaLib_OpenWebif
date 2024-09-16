@@ -202,7 +202,7 @@ public class RemoteControl {
 			String prefix = "pressMenuRemote('";
 			String suffix = "');";
 			String keyCode = null;
-			if (onclickStr.startsWith(prefix) && onclickStr.endsWith(suffix))
+			if (onclickStr!=null && onclickStr.startsWith(prefix) && onclickStr.endsWith(suffix))
 				keyCode = onclickStr.substring(prefix.length(), onclickStr.length()-suffix.length());
 			else
 				System.err.printf("Parsing RemoteControl Description: Can't parse key %d. Found unexpected 'onclick' value: \"%s\"%n", keyIndex, onclickStr);
