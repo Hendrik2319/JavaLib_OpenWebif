@@ -14,6 +14,12 @@ public class StationID implements Comparable<StationID> {
 		return numbers[1]==0x64;
 	}
 	
+	public Integer getNumber(int index) {
+		if (0 <= index && index < numbers.length)
+			return numbers[index];
+		return null;
+	}
+	
 	@Override public int compareTo(StationID other) {
 		if (other==null) return -1;
 		Integer thisN,otherN;
