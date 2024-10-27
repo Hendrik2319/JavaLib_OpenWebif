@@ -100,14 +100,14 @@
 					
 					link = div.appendChild(document.createElement('a'));
 					link.target="_blank";
-					link.href=baseURL+'/web/'+cmd+bRef;
+					link.href=baseURL+'/web/'+ cmd + encodeURIComponent(bRef);
 					link.textContent = 'xml';
 					
 					div.appendChild(document.createTextNode(' / '));
 					
 					link = div.appendChild(document.createElement('a'));
 					link.target="_blank";
-					link.href=baseURL+'/api/'+cmd+bRef;
+					link.href=baseURL+'/api/'+ cmd + encodeURIComponent(bRef);
 					link.textContent = 'json';
 					
 					div.appendChild(document.createElement('br'));

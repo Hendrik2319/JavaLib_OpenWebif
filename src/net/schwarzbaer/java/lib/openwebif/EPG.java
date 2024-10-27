@@ -36,6 +36,42 @@ public class EPG {
 		return stationEPGs.isEmpty();
 	}
 
+	public Vector<EPGevent> readEPGNowForBouquet(String baseURL, Bouquet bouquet, String apiCommandPath, Consumer<String> setIndeterminateProgressTask) {
+		return readEPGSimpleForBouquet(baseURL, bouquet, API.API_EPGNOW, "readEPGNowForBouquet", setIndeterminateProgressTask);
+	}
+
+	public Vector<EPGevent> readEPGNowNextForBouquet(String baseURL, Bouquet bouquet, String apiCommandPath, Consumer<String> setIndeterminateProgressTask) {
+		return readEPGSimpleForBouquet(baseURL, bouquet, API.API_EPGNOWNEXT, "readEPGNowNextForBouquet", setIndeterminateProgressTask);
+	}
+
+	private Vector<EPGevent> readEPGSimpleForBouquet(String baseURL, Bouquet bouquet, String apiCommandPath, String commandLabel, Consumer<String> setIndeterminateProgressTask) {
+		if (baseURL==null) return null;
+		
+		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
+		String url = String.format("%s%s?bRef=%s", baseURL, API.API_EPGNOW, OpenWebifTools.encodeForURL(bouquet.servicereference));
+		
+		String baseURL_ = baseURL;
+		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(
+				url,
+				err->{
+					err.printf("   %s(baseURL, bouquet)%n", commandLabel);
+					err.printf("      baseURL  : \"%s\"%n", baseURL_);
+					err.printf("      bouquet  : %s%n", bouquet.servicereference);
+					err.printf("      -> url   : \"%s\"%n", url);
+				},
+				result -> {
+					OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "EPGevents for Bouquet");
+					if (!parseResult.result) return null;
+					return parseResult.events;
+				},
+				setIndeterminateProgressTask
+		);
+		
+		addAll(events);
+		
+		return events;
+	}
+
 	public Vector<EPGevent> readEPGforBouquet(String baseURL, Bouquet bouquet, Long beginTime_UnixTS, Long endTime_Minutes, Consumer<String> setIndeterminateProgressTask) {
 		if (baseURL==null) return null;
 		
