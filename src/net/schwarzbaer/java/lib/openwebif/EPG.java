@@ -36,11 +36,11 @@ public class EPG {
 		return stationEPGs.isEmpty();
 	}
 
-	public Vector<EPGevent> readEPGNowForBouquet(String baseURL, Bouquet bouquet, String apiCommandPath, Consumer<String> setIndeterminateProgressTask) {
+	public Vector<EPGevent> readEPGNowForBouquet(String baseURL, Bouquet bouquet, Consumer<String> setIndeterminateProgressTask) {
 		return readEPGSimpleForBouquet(baseURL, bouquet, API.API_EPGNOW, "readEPGNowForBouquet", setIndeterminateProgressTask);
 	}
 
-	public Vector<EPGevent> readEPGNowNextForBouquet(String baseURL, Bouquet bouquet, String apiCommandPath, Consumer<String> setIndeterminateProgressTask) {
+	public Vector<EPGevent> readEPGNowNextForBouquet(String baseURL, Bouquet bouquet, Consumer<String> setIndeterminateProgressTask) {
 		return readEPGSimpleForBouquet(baseURL, bouquet, API.API_EPGNOWNEXT, "readEPGNowNextForBouquet", setIndeterminateProgressTask);
 	}
 
@@ -60,7 +60,7 @@ public class EPG {
 					err.printf("      -> url   : \"%s\"%n", url);
 				},
 				result -> {
-					OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "EPGevents for Bouquet");
+					OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "BouquetEvents");
 					if (!parseResult.result) return null;
 					return parseResult.events;
 				},
@@ -92,7 +92,7 @@ public class EPG {
 					err.printf("      -> url   : \"%s\"%n", url);
 				},
 				result -> {
-					OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "EPGevents for Bouquet");
+					OpenWebifTools.EPGeventListResult parseResult = new OpenWebifTools.EPGeventListResult(result, "BouquetEvents");
 					if (!parseResult.result) return null;
 					return parseResult.events;
 				},
@@ -188,8 +188,9 @@ public class EPG {
 		public synchronized Vector<EPGevent> getEvents(long beginTime_UnixTS, Long endTime_UnixTS, boolean sorted) {
 			Vector<EPGevent> result = new Vector<>();
 			for (EPGevent event:events.values()) {
+				if (event.begin_timestamp==null) continue;
 				long eventBegin = event.begin_timestamp;
-				long eventDuration = event.duration_sec;
+				long eventDuration = event.duration_sec==null ? 0 : event.duration_sec;
 				if ( eventBegin+eventDuration < beginTime_UnixTS || (endTime_UnixTS!=null && endTime_UnixTS.longValue() < eventBegin) )
 					continue;
 				
