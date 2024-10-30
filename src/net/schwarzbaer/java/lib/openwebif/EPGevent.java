@@ -25,6 +25,7 @@ public class EPGevent {
 	public final Long   duration_sec;
 	public final Long   remaining;
 	public final Long   progress;
+	public final Double computedProgress;
 	public final Long   tleft;
 	public final String provider;
 	public final String picon;
@@ -46,27 +47,28 @@ public class EPGevent {
 	}
 
 	public EPGevent(EPGevent other) {
-		this.station_name    = other.station_name;    
-		this.title           = other.title;           
-		this.shortdesc       = other.shortdesc;       
-		this.longdesc        = other.longdesc;        
-		this.genre           = other.genre;           
-		this.genreid         = other.genreid;         
-		this.date            = other.date;            
-		this.begin           = other.begin;           
-		this.end             = other.end;             
-		this.begin_timestamp = other.begin_timestamp; 
-		this.now_timestamp   = other.now_timestamp;   
-		this.duration_min    = other.duration_min;    
-		this.duration_sec    = other.duration_sec;    
-		this.remaining       = other.remaining;       
-		this.progress        = other.progress;        
-		this.tleft           = other.tleft;           
-		this.provider        = other.provider;        
-		this.picon           = other.picon;           
-		this.sref            = other.sref;            
-		this.id              = other.id;              
-		this.isUpToDate      = other.isUpToDate;              
+		this.station_name     = other.station_name;    
+		this.title            = other.title;           
+		this.shortdesc        = other.shortdesc;       
+		this.longdesc         = other.longdesc;        
+		this.genre            = other.genre;           
+		this.genreid          = other.genreid;         
+		this.date             = other.date;            
+		this.begin            = other.begin;           
+		this.end              = other.end;             
+		this.begin_timestamp  = other.begin_timestamp; 
+		this.now_timestamp    = other.now_timestamp;   
+		this.duration_min     = other.duration_min;    
+		this.duration_sec     = other.duration_sec;    
+		this.remaining        = other.remaining;       
+		this.progress         = other.progress;
+		this.computedProgress = other.computedProgress;
+		this.tleft            = other.tleft;           
+		this.provider         = other.provider;        
+		this.picon            = other.picon;           
+		this.sref             = other.sref;            
+		this.id               = other.id;              
+		this.isUpToDate       = other.isUpToDate;              
 	}
 	
 	public EPGevent(JSON_Object<NV, V> object, String debugOutputPrefixStr) throws TraverseException {
@@ -98,6 +100,20 @@ public class EPGevent {
 		sref            =                                 JSON_Data.getStringValue (object, "sref"                        , debugOutputPrefixStr);   // "sref"           : "1:0:19:2B66:3F3:1:C00000:0:0:0:",   
 		id              =                                 JSON_Data.getIntegerValue(object, "id"             , false, true, debugOutputPrefixStr);   // "id"             : 23528                                  
 		id_null         =                                 JSON_Data.getNullValue   (object, "id"             , false, true, debugOutputPrefixStr);   // "id"             : null
+		
+		
+		if (begin_timestamp==null || now_timestamp==0 || duration_sec==null)
+			computedProgress = null;
+		
+		else if (now_timestamp < begin_timestamp)
+			computedProgress = 0.0;
+		
+		else if (now_timestamp > begin_timestamp + duration_sec)
+			computedProgress = 1.0;
+		
+		else
+			computedProgress = (now_timestamp - begin_timestamp) / duration_sec.doubleValue();
+		
 		
 		checkValueOrNull(             id,              id_null,              "id", "IntegerValue", debugOutputPrefixStr);
 		checkValueOrNull(begin_timestamp, begin_timestamp_null, "begin_timestamp", "IntegerValue", debugOutputPrefixStr);
