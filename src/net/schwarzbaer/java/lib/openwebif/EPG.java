@@ -48,7 +48,7 @@ public class EPG {
 		if (baseURL==null) return null;
 		
 		baseURL = OpenWebifTools.removeAllTrailingSlashes(baseURL);
-		String url = String.format("%s%s?bRef=%s", baseURL, API.API_EPGNOW, OpenWebifTools.encodeForURL(bouquet.servicereference));
+		String url = String.format("%s%s?bRef=%s", baseURL, apiCommandPath, OpenWebifTools.encodeForURL(bouquet.servicereference));
 		
 		String baseURL_ = baseURL;
 		Vector<EPGevent> events = OpenWebifTools.getContentAndParseJSON(

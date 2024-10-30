@@ -1,5 +1,10 @@
 package net.schwarzbaer.java.lib.openwebif;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 import java.util.function.Consumer;
 
@@ -50,6 +55,28 @@ public class Timers {
 			if (sref.equalsIgnoreCase( timer.serviceref ))
 				stationTimers.add(timer);
 		return stationTimers;
+	}
+	
+	public record EventID(String sref, long eventId) {}
+	
+	public Vector<Timer> getTimers(Collection<EventID> eventIDs)
+	{
+		Map<Long,Set<String>> eventIDMap = new HashMap<>();
+		for (EventID eventID : eventIDs)
+			if (eventID.sref!=null)
+				eventIDMap
+					.computeIfAbsent(eventID.eventId, n->new HashSet<>())
+					.add(eventID.sref.toLowerCase());
+		
+		Vector<Timer> timers = new Vector<>();
+		for (Timer timer : this.timers)
+		{
+			Set<String> sRefs = eventIDMap.get(timer.eit);
+			if (sRefs!=null && sRefs.contains( timer.serviceref.toLowerCase() ))
+				timers.add(timer);
+		}
+		
+		return timers;
 	}
 	
 	public static Timers read(String baseURL, Consumer<String> setIndeterminateProgressTask) {
