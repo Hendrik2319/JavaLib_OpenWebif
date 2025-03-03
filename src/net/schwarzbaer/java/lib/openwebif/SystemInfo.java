@@ -38,9 +38,11 @@ public class SystemInfo {
 	SystemInfo(JSON_Data.Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 		if (debugOutputPrefixStr==null) debugOutputPrefixStr = "SystemInfo";
 		
-		//JSON_Helper.OptionalValues<NV, V> optVal = new JSON_Helper.OptionalValues<NV,V>();
-		//optVal.scan(value, debugOutputPrefixStr);
-		//optVal.show(System.err);
+		/*
+		JSON_Helper.OptionalValues<NV, V> optVal = new JSON_Helper.OptionalValues<>();
+		optVal.scan(value, debugOutputPrefixStr);
+		optVal.show(System.err);
+		*/
 		
 		JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);			
 		
@@ -155,7 +157,7 @@ public class SystemInfo {
 	public static class Interface {
 		
 		public final boolean dhcp;
-		public final Null firstpublic;
+		public final String firstpublic;
 		public final String friendlynic;
 		public final String gw;
 		public final String ip;
@@ -171,9 +173,11 @@ public class SystemInfo {
 		Interface(JSON_Data.Value<NV, V> value, String debugOutputPrefixStr) throws TraverseException {
 			if (debugOutputPrefixStr==null) debugOutputPrefixStr = "SystemInfo.Info.Interface";
 			
+			Null firstpublic_Null;
 			JSON_Object<NV, V> object = JSON_Data.getObjectValue(value, debugOutputPrefixStr);
 			dhcp        =                                 JSON_Data.getBoolValue   (object, "dhcp"       , debugOutputPrefixStr)  ; // :Bool   
-			firstpublic =                                 JSON_Data.getNullValue   (object, "firstpublic", debugOutputPrefixStr)  ; // :Null   
+			firstpublic_Null =                            JSON_Data.getNullValue   (object, "firstpublic", false, true, debugOutputPrefixStr); // :Null
+			firstpublic =                                 JSON_Data.getStringValue (object, "firstpublic", false, true, debugOutputPrefixStr); // :String
 			friendlynic = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "friendlynic", debugOutputPrefixStr) ); // :String 
 			gw          = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "gw"         , debugOutputPrefixStr) ); // :String 
 			ip          = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "ip"         , debugOutputPrefixStr) ); // :String 
@@ -185,6 +189,9 @@ public class SystemInfo {
 			mask        = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "mask"       , debugOutputPrefixStr) ); // :String 
 			name        = JSON_Data.decodeUnicodeAndHTML( JSON_Data.getStringValue (object, "name"       , debugOutputPrefixStr) ); // :String 
 			v4prefix    =                                 JSON_Data.getIntegerValue(object, "v4prefix"   , debugOutputPrefixStr)  ; // :Integer
+			
+			if (firstpublic_Null==null && firstpublic==null)
+				throw new TraverseException("%s.firstpublic isn't Null or String", debugOutputPrefixStr);
 		}
 	}
 	
