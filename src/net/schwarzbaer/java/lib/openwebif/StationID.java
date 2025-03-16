@@ -14,6 +14,10 @@ public class StationID implements Comparable<StationID> {
 		return numbers[1]==0x64;
 	}
 	
+	public static boolean isMarker(String sref) {
+		return sref!=null && sref.startsWith("1:64:");
+	}
+	
 	public Integer getNumber(int index) {
 		if (0 <= index && index < numbers.length)
 			return numbers[index];
