@@ -1,6 +1,7 @@
 package net.schwarzbaer.java.lib.openwebif;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class StationID implements Comparable<StationID> {
 	
@@ -18,6 +19,23 @@ public class StationID implements Comparable<StationID> {
 		return sref!=null && sref.startsWith("1:64:");
 	}
 	
+	public boolean isSameTransponderAs(StationID other) {
+		return isSameTransponder(this, other);
+	}
+	
+	public static boolean isSameTransponder(StationID id1, StationID id2) {
+		if (id1 == null || id2 == null) return false;
+		return Objects.equals(
+				getTransponderID(id1),
+				getTransponderID(id2)
+		);
+	}
+
+	public static Integer getTransponderID(StationID id)
+	{
+		return id==null ? null : id.getNumber(4);
+	}
+
 	public Integer getNumber(int index) {
 		if (0 <= index && index < numbers.length)
 			return numbers[index];

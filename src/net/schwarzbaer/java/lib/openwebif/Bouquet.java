@@ -81,6 +81,10 @@ public class Bouquet {
 		public boolean isMarker() {
 			return service.isMarker();
 		}
+		
+		public StationID getStationID() {
+			return service.stationID;
+		}
 
 		public static SubService parse(JSON_Object<NV,V> object, BouquetReadInterface bouquetReadInterface) {
 			if (object==null) return null;
