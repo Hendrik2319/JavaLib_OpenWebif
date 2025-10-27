@@ -463,7 +463,7 @@ public class OpenWebifTools {
 		else
 			url = String.format("%s%s"           , baseURL, API.API_MOVIELIST);
 		
-		System.out.printf("get MovieList: \"%s\"%n", url);
+		//System.out.printf("get MovieList: \"%s\"%n", url);
 		
 		return getContentAndParseJSON(url, err->{
 			err.printf("   readMovieList(baseURL, dir)%n");
